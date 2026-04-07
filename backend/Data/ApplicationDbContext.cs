@@ -73,4 +73,6 @@ namespace CareFund.Data
                 .WithOne(n => n.Donation)
                 .HasForeignKey(n => n.DonationId);
         }
-   
+    
+    }
+}
