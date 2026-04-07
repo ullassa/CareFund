@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
- 
+using CareFund.Enums;
+   namespace CareFund.Models
+  {
 public class User
 {
     [Key]
@@ -15,7 +17,7 @@ public class User
     public string PhoneNumber { get; set; }
  
     [Required]
-    public UserRole Role { get; set; }
+    public UserRole UserRole { get; set; }
  
     public bool IsActive { get; set; } = true;
  
@@ -31,4 +33,7 @@ public class User
     public Customer Customer { get; set; }
     public ICollection<OTP> OTPs { get; set; }
     public ICollection<Notification> Notifications { get; set; }
+    public ICollection<Charity> Charities { get; set; } = new List<Charity>();
+ 
 }
+  }

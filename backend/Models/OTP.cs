@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
- 
+using CareFund.Enums;
+   namespace CareFund.Models
+  {
 public class OTP
 {
     [Key]
@@ -12,7 +14,7 @@ public class OTP
     [Required]
     public string OtpCode { get; set; }
  
-    public string OtpType { get; set; }
+    public OtpType OtpType { get; set; }
  
     public DateTime ExpiryTime { get; set; }
  
@@ -23,3 +25,4 @@ public class OTP
     // Navigation
     public User User { get; set; }
 }
+  }
