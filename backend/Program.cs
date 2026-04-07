@@ -1,3 +1,5 @@
+using CareFund.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//db context
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+ 
+
 // Allow Angular to call the API (CORS)
 builder.Services.AddCors(options =>
 {
@@ -16,6 +24,7 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod());
 });
+
 
 var app = builder.Build();
 
@@ -32,4 +41,8 @@ app.UseAuthorization();
 // Enables attribute-routed controllers like /api/charities
 app.MapControllers();
 
+
+
+
+ 
 app.Run();

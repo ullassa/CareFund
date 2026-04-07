@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
- 
+using CareFund.Enums;
+ namespace CareFund.Models
+ {
+    
 public class Charity
 {
     [Key]
@@ -21,7 +24,7 @@ public class Charity
  
     public string Email { get; set; }
  
-    public CharityStatus Status { get; set; }
+    public CharityStatus CharityStatus { get; set; }
  
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
  
@@ -31,5 +34,7 @@ public class Charity
  
     // Navigation
     public User User { get; set; }
-    public ICollection<Donation> Donations { get; set; }
+    //public ICollection<Donation> Donations { get; set; }
+    public ICollection<Donation> Donations { get; set; } = new List<Donation>();
 }
+ }
