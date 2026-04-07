@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
- 
+using CareFund.Enums;
+   namespace CareFund.Models
+  {
 public class Notification
 {
     [Key]
@@ -24,3 +26,4 @@ public class Notification
     public User User { get; set; }
     public Donation Donation { get; set; }
 }
+  }
