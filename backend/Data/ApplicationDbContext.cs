@@ -44,7 +44,7 @@ namespace CareFund.Data
                 .HasForeignKey(d => d.CustomerId);
  
             // Charity - Donation (1:M)
-            modelBuilder.Entity<Charity>()
+            modelBuilder.Entity<Charity>() 
                 .HasMany(c => c.Donations)
                 .WithOne(d => d.Charity)
                 .HasForeignKey(d => d.CharityId);

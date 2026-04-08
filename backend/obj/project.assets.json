@@ -2842,7 +2842,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ullas.sa\\.nuget\\packages\\": {}
+    "C:\\Users\\shreya.x5\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -2850,11 +2850,11 @@
       "projectUniqueName": "C:\\CareFund\\backend\\CareFund.csproj",
       "projectName": "CareFund",
       "projectPath": "C:\\CareFund\\backend\\CareFund.csproj",
-      "packagesPath": "C:\\Users\\ullas.sa\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\shreya.x5\\.nuget\\packages\\",
       "outputPath": "C:\\CareFund\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\ullas.sa\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\shreya.x5\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"

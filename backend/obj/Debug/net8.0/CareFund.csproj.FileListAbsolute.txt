@@ -112,7 +112,6 @@ C:\CareFund\backend\obj\Debug\net8.0\CareFund.AssemblyInfo.cs
 C:\CareFund\backend\obj\Debug\net8.0\CareFund.csproj.CoreCompileInputs.cache
 C:\CareFund\backend\obj\Debug\net8.0\CareFund.MvcApplicationPartsAssemblyInfo.cs
 C:\CareFund\backend\obj\Debug\net8.0\CareFund.MvcApplicationPartsAssemblyInfo.cache
-C:\CareFund\backend\obj\Debug\net8.0\CareFund.sourcelink.json
 C:\CareFund\backend\obj\Debug\net8.0\staticwebassets.build.json
 C:\CareFund\backend\obj\Debug\net8.0\staticwebassets.development.json
 C:\CareFund\backend\obj\Debug\net8.0\staticwebassets\msbuild.CareFund.Microsoft.AspNetCore.StaticWebAssets.props
