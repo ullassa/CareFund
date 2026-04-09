@@ -1,17 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\CareFund\\backend\\CareFund.csproj": {}
+    "c:\\CareFund\\backend\\CareFund.csproj": {}
   },
   "projects": {
-    "C:\\CareFund\\backend\\CareFund.csproj": {
+    "c:\\CareFund\\backend\\CareFund.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\CareFund\\backend\\CareFund.csproj",
+        "projectUniqueName": "c:\\CareFund\\backend\\CareFund.csproj",
         "projectName": "CareFund",
+<<<<<<< HEAD
         "projectPath": "C:\\CareFund\\backend\\CareFund.csproj",
         "packagesPath": "C:\\Users\\surabhi.rao\\.nuget\\packages\\",
         "outputPath": "C:\\CareFund\\backend\\obj\\",
+=======
+        "projectPath": "c:\\CareFund\\backend\\CareFund.csproj",
+        "packagesPath": "C:\\Users\\ullas.sa\\.nuget\\packages\\",
+        "outputPath": "c:\\CareFund\\backend\\obj\\",
+>>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\surabhi.rao\\AppData\\Roaming\\NuGet\\NuGet.Config"

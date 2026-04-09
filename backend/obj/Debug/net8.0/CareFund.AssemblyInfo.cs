@@ -13,7 +13,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CareFund")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< HEAD
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eaf08af9e0b1f3ffe39700cd0eaab07e752089cc")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+>>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
 [assembly: System.Reflection.AssemblyProductAttribute("CareFund")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CareFund")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

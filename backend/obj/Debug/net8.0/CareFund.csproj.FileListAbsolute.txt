@@ -161,4 +161,7 @@ c:\CareFund\backend\obj\Debug\net8.0\refint\CareFund.dll
 c:\CareFund\backend\obj\Debug\net8.0\CareFund.pdb
 c:\CareFund\backend\obj\Debug\net8.0\CareFund.genruntimeconfig.cache
 c:\CareFund\backend\obj\Debug\net8.0\ref\CareFund.dll
+<<<<<<< HEAD
 C:\CareFund\backend\obj\Debug\net8.0\CareFund.sourcelink.json
+=======
+>>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
