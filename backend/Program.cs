@@ -50,33 +50,33 @@ app.MapControllers();
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
  
-if (!db.Users.Any())
-{
-    db.Users.AddRange(
-        new User
-        {
-            UserName = "Ullas",
-            Email = "ullas@gmail.com",
-            PhoneNumber = "9999999999",
-            // UserRole = UserRole.Admin,
-            PasswordHash = "123456",
-            CreatedAt = DateTime.UtcNow
-        },
-        new User
-        {
-            UserName = "Ravi",
-            Email = "ravi@gmail.com",
-            PhoneNumber = "8888888888",
-            // UserRole = UserRole.User,
-            PasswordHash = "123456",
-            CreatedAt = DateTime.UtcNow
-        }
-    );
+// if (!db.Users.Any())
+// {
+//     db.Users.AddRange(
+//         new User
+//         {
+//             UserName = "Ullas",
+//             Email = "ullas@gmail.com",
+//             PhoneNumber = "9999999999",
+//             // UserRole = UserRole.Admin,
+//             PasswordHash = "123456",
+//             CreatedAt = DateTime.UtcNow
+//         },
+//         new User
+//         {
+//             UserName = "Ravi",
+//             Email = "ravi@gmail.com",
+//             PhoneNumber = "8888888888",
+//             // UserRole = UserRole.User,
+//             PasswordHash = "123456",
+//             CreatedAt = DateTime.UtcNow
+//         }
+//     );
 
-}
+// }
 
  
-    db.SaveChanges();
+//     db.SaveChanges();
 }
  
 app.Run();
