@@ -1,10 +1,6 @@
 {
   "Version": 1,
-<<<<<<< HEAD
-  "Hash": "ep9ypnaQHCaFuJeuYq2Qqdwrqep0SnFMi//mgyIKU2U=",
-=======
   "Hash": "QaG/dgBOVO1cxFW/YSD/cppN1ArIVBKxewAyiSK9UZg=",
->>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
   "Source": "CareFund",
   "BasePath": "_content/CareFund",
   "Mode": "Default",
@@ -40,17 +36,10 @@
       "OriginalItemSpec": "wwwroot\\css\\site.css"
     },
     {
-<<<<<<< HEAD
-      "Identity": "C:\\CareFund\\backend\\wwwroot\\js\\site.js",
-      "SourceId": "CareFund",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\CareFund\\backend\\wwwroot\\",
-=======
       "Identity": "c:\\CareFund\\backend\\wwwroot\\js\\site.js",
       "SourceId": "CareFund",
       "SourceType": "Discovered",
       "ContentRoot": "c:\\CareFund\\backend\\wwwroot\\",
->>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
       "BasePath": "_content/CareFund",
       "RelativePath": "js/site.js",
       "AssetKind": "All",
@@ -921,30 +910,7 @@
       "OriginalItemSpec": "wwwroot\\lib\\bootstrap\\LICENSE"
     },
     {
-<<<<<<< HEAD
-      "Identity": "C:\\CareFund\\backend\\wwwroot\\lib\\favicon.ico",
-      "SourceId": "CareFund",
-      "SourceType": "Discovered",
-      "ContentRoot": "C:\\CareFund\\backend\\wwwroot\\",
-      "BasePath": "_content/CareFund",
-      "RelativePath": "lib/favicon.ico",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "PreferTarget",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\lib\\favicon.ico"
-    },
-    {
-      "Identity": "C:\\CareFund\\backend\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
-=======
       "Identity": "c:\\CareFund\\backend\\wwwroot\\lib\\favicon.ico",
->>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
       "SourceId": "CareFund",
       "SourceType": "Discovered",
       "ContentRoot": "c:\\CareFund\\backend\\wwwroot\\",

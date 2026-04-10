@@ -9,18 +9,12 @@
       "restore": {
         "projectUniqueName": "c:\\CareFund\\backend\\CareFund.csproj",
         "projectName": "CareFund",
-<<<<<<< HEAD
-        "projectPath": "C:\\CareFund\\backend\\CareFund.csproj",
-        "packagesPath": "C:\\Users\\surabhi.rao\\.nuget\\packages\\",
-        "outputPath": "C:\\CareFund\\backend\\obj\\",
-=======
         "projectPath": "c:\\CareFund\\backend\\CareFund.csproj",
         "packagesPath": "C:\\Users\\ullas.sa\\.nuget\\packages\\",
         "outputPath": "c:\\CareFund\\backend\\obj\\",
->>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\surabhi.rao\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\ullas.sa\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -49,15 +43,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Microsoft.EntityFrameworkCore.InMemory": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
-              "target": "Package",
-              "version": "[8.0.0, )"
-            },
-            "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
@@ -67,7 +57,7 @@
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[10.1.7, )"
+              "version": "[8.0.0, )"
             }
           },
           "imports": [

@@ -5,11 +5,7 @@
       "PackagePath": "staticwebassets\\css\\site.css"
     },
     {
-<<<<<<< HEAD
-      "Id": "C:\\CareFund\\backend\\wwwroot\\js\\site.js",
-=======
       "Id": "c:\\CareFund\\backend\\wwwroot\\js\\site.js",
->>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
       "PackagePath": "staticwebassets\\js\\site.js"
     },
     {
@@ -193,19 +189,11 @@
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
     },
     {
-<<<<<<< HEAD
-      "Id": "C:\\CareFund\\backend\\wwwroot\\lib\\favicon.ico",
-      "PackagePath": "staticwebassets\\lib\\favicon.ico"
-    },
-    {
-      "Id": "C:\\CareFund\\backend\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
-=======
       "Id": "c:\\CareFund\\backend\\wwwroot\\lib\\favicon.ico",
       "PackagePath": "staticwebassets\\lib\\favicon.ico"
     },
     {
       "Id": "c:\\CareFund\\backend\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
->>>>>>> ebdb94bb4db5665655fb77b5155ea16b840fd352
       "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
     },
     {
