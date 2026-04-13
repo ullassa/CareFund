@@ -1,0 +1,98 @@
+<app-header></app-header>
+
+<div class="blogs-page">
+  <!-- Hero Section -->
+  <section class="blogs-hero">
+    <div class="hero-content">
+      <h1>Our Blog</h1>
+      <p>Stories, insights, and updates from the CareFund community</p>
+    </div>
+  </section>
+
+  <!-- Featured Posts -->
+  <section class="featured-section">
+    <div class="container">
+      <h2>Featured Stories</h2>
+      <div class="featured-grid">
+        <article class="featured-post" *ngFor="let post of featuredPosts">
+          <div class="post-image">{{ post.image }}</div>
+          <div class="post-content">
+            <span class="post-category">{{ post.category }}</span>
+            <h3>{{ post.title }}</h3>
+            <p class="post-excerpt">{{ post.excerpt }}</p>
+            <div class="post-meta">
+              <span>{{ post.author }}</span>
+              <span>•</span>
+              <span>{{ post.date }}</span>
+              <span>•</span>
+              <span>{{ post.readTime }}</span>
+            </div>
+            <a href="#read-more" class="read-more">Read More →</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- All Posts Section -->
+  <section class="all-posts-section">
+    <div class="container">
+      <h2>All Articles</h2>
+
+      <!-- Category Filter -->
+      <div class="category-filter">
+        <button
+          class="category-btn"
+          *ngFor="let category of categories"
+          [class.active]="selectedCategory === category"
+          (click)="selectCategory(category)"
+        >
+          {{ category }}
+        </button>
+      </div>
+
+      <!-- Posts Grid -->
+      <div class="posts-grid">
+        <article class="post-card" *ngFor="let post of filteredPosts">
+          <div class="card-image">{{ post.image }}</div>
+          <div class="card-content">
+            <span class="post-badge">{{ post.category }}</span>
+            <h3>{{ post.title }}</h3>
+            <p class="post-excerpt">{{ post.excerpt }}</p>
+          </div>
+          <div class="card-footer">
+            <div class="post-info">
+              <span class="author">{{ post.author }}</span>
+              <span class="date">{{ post.date }}</span>
+            </div>
+            <a href="#read-more" class="read-btn">Read →</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- No Posts Message -->
+      <div *ngIf="filteredPosts.length === 0" class="no-posts">
+        <p>No articles found in this category.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section class="newsletter-section">
+    <div class="container">
+      <h2>Subscribe to Our Newsletter</h2>
+      <p>Get the latest stories and updates delivered to your inbox</p>
+      <form class="newsletter-form" (ngSubmit)="$event.preventDefault()">
+        <input
+          type="email"
+          placeholder="Enter your email"
+          required
+          class="newsletter-input"
+        >
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<app-footer></app-footer>

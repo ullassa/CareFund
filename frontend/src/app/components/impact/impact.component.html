@@ -1,0 +1,83 @@
+<app-header></app-header>
+
+<div class="impact-page">
+  <!-- Hero Section -->
+  <section class="impact-hero">
+    <div class="hero-content">
+      <h1>Our Impact</h1>
+      <p>See the real change we're making together</p>
+    </div>
+  </section>
+
+  <!-- Impact Metrics -->
+  <section class="impact-metrics">
+    <div class="container">
+      <h2>Key Metrics</h2>
+      <div class="metrics-grid">
+        <div class="metric-card" *ngFor="let metric of impactMetrics">
+          <div class="metric-icon">{{ metric.icon }}</div>
+          <h3>{{ metric.label }}</h3>
+          <p class="metric-value">{{ metric.value }}</p>
+          <p class="metric-description">{{ metric.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Impact Stories -->
+  <section class="impact-stories">
+    <div class="container">
+      <h2>Success Stories</h2>
+      <div class="stories-grid">
+        <div class="story-card" *ngFor="let story of impactStories">
+          <div class="story-image">{{ story.image }}</div>
+          <div class="story-badge">{{ story.cause }}</div>
+          <h3>{{ story.title }}</h3>
+          <p class="story-description">{{ story.description }}</p>
+          <div class="story-stats">
+            <div class="stat">
+              <span class="label">Impact:</span>
+              <span class="value">{{ story.impact }}</span>
+            </div>
+            <div class="stat">
+              <span class="label">Beneficiaries:</span>
+              <span class="value">{{ story.beneficiaries }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline / Milestones -->
+  <section class="milestones-section">
+    <div class="container">
+      <h2>Our Journey</h2>
+      <div class="timeline">
+        <div class="timeline-item" *ngFor="let milestone of milestones; let i = index">
+          <div class="timeline-marker" [class.even]="i % 2 === 0">
+            <span class="milestone-icon">{{ milestone.icon }}</span>
+          </div>
+          <div class="timeline-content" [class.left]="i % 2 === 0" [class.right]="i % 2 !== 0">
+            <p class="timeline-year">{{ milestone.year }}</p>
+            <p class="timeline-event">{{ milestone.event }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="impact-cta">
+    <div class="container">
+      <h2>Join Us in Making a Difference</h2>
+      <p>Be part of our mission to create positive change in the world</p>
+      <div class="cta-buttons">
+        <a routerLink="/customer-signup" class="btn btn-primary">Start Donating</a>
+        <a routerLink="/charity-signup" class="btn btn-secondary">Become a Partner</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<app-footer></app-footer>

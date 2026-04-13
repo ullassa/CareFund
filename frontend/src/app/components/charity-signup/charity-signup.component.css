@@ -1,0 +1,411 @@
+.signup-page {
+  min-height: calc(100vh - 70px);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem 1rem;
+}
+
+.signup-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Progress Section */
+.progress-section {
+  margin-bottom: 2rem;
+}
+
+.progress-bar {
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #ff6b6b;
+  transition: width 0.3s ease;
+}
+
+.step-indicators {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+}
+
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s ease;
+}
+
+.step-indicator.active {
+  color: white;
+}
+
+.step-indicator.completed {
+  color: #ff6b6b;
+}
+
+.step-indicator span {
+  width: 35px;
+  height: 35px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.step-indicator.completed span {
+  background-color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+.step-indicator p {
+  font-size: 0.7rem;
+  margin: 0;
+  text-align: center;
+}
+
+/* Signup Card */
+.signup-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.signup-card h1 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 0.3rem;
+  text-align: center;
+}
+
+.subtitle {
+  color: #666;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-step {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-step h2 {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.step-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.form-control {
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-control.is-invalid {
+  border-color: #ff6b6b;
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+select.form-control {
+  cursor: pointer;
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* OTP Group */
+.otp-group {
+  gap: 0.75rem;
+}
+
+.otp-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.otp-input-wrapper .form-control {
+  flex: 1;
+}
+
+.btn-verify {
+  margin-top: 0.5rem;
+}
+
+/* Password Wrapper */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper .form-control {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+.password-toggle:hover {
+  opacity: 0.7;
+}
+
+/* File Input */
+.file-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-input-wrapper input[type="file"] {
+  padding: 0.5rem;
+  border: 2px dashed #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.file-input-wrapper input[type="file"]:hover {
+  border-color: #667eea;
+}
+
+.file-hint {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Approval Notice */
+.approval-notice {
+  background-color: #e8f4f8;
+  border-left: 4px solid #667eea;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.approval-notice p {
+  margin: 0;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #667eea;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+  background-color: #667eea;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #5568d3;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: #667eea;
+  color: white;
+}
+
+/* Button Group */
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.button-group .btn {
+  width: 100%;
+}
+
+.button-group .btn:first-child {
+  grid-column: 1;
+}
+
+.button-group .btn:last-child {
+  grid-column: 2;
+}
+
+.button-group .btn:only-of-type {
+  grid-column: 1 / -1;
+}
+
+/* Alert */
+.alert {
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.alert-error {
+  background-color: #ffe0e0;
+  color: #cc0000;
+  border: 1px solid #ff6b6b;
+}
+
+/* Login Link */
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #666;
+}
+
+.login-link a {
+  color: #667eea;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .signup-card {
+    padding: 1.5rem;
+  }
+
+  .signup-card h1 {
+    font-size: 1.3rem;
+  }
+
+  .button-group {
+    grid-template-columns: 1fr;
+  }
+
+  .button-group .btn:last-child {
+    grid-column: 1;
+  }
+
+  .step-indicators {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+  }
+
+  .step-indicator span {
+    width: 32px;
+    height: 32px;
+  }
+
+  .step-indicator p {
+    font-size: 0.65rem;
+  }
+
+  .otp-input-wrapper {
+    flex-direction: column;
+  }
+
+  .btn-verify {
+    margin-top: 0.5rem;
+  }
+}

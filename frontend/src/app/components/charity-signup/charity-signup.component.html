@@ -1,0 +1,428 @@
+<app-header></app-header>
+
+<div class="signup-page">
+  <div class="signup-container">
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width]="(currentStep / totalSteps * 100) + '%'"></div>
+      </div>
+      <div class="step-indicators">
+        <div class="step-indicator" *ngFor="let i of [1, 2, 3, 4, 5]"
+             [class.active]="currentStep === i"
+             [class.completed]="i < currentStep">
+          <span>{{ i }}</span>
+          <p *ngIf="i === 1">Org Info</p>
+          <p *ngIf="i === 2">Phone</p>
+          <p *ngIf="i === 3">Password</p>
+          <p *ngIf="i === 4">Address</p>
+          <p *ngIf="i === 5">Charity Details</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signup Form Card -->
+    <div class="signup-card">
+      <h1>Create Charity Account</h1>
+      <p class="subtitle">Register your organization and get approved by our admin team</p>
+
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+
+        <!-- Step 1: Organization Info -->
+        <div *ngIf="currentStep === 1" class="form-step">
+          <h2>Organization Information</h2>
+
+          <div class="form-group">
+            <label for="organizationName">Organization Name *</label>
+            <input
+              type="text"
+              id="organizationName"
+              formControlName="organizationName"
+              placeholder="Your Organization Name"
+              class="form-control"
+              [class.is-invalid]="submitted && organizationName?.invalid"
+            >
+            <div *ngIf="submitted && organizationName?.invalid" class="error-message">
+              <span *ngIf="organizationName?.errors?.['required']">Organization name is required</span>
+              <span *ngIf="organizationName?.errors?.['minlength']">Name must be at least 3 characters</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              placeholder="contact@charity.com"
+              class="form-control"
+              [class.is-invalid]="submitted && email?.invalid"
+            >
+            <div *ngIf="submitted && email?.invalid" class="error-message">
+              <span *ngIf="email?.errors?.['required']">Email is required</span>
+              <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+            </div>
+          </div>
+
+          <div class="form-group otp-group">
+            <label for="emailOtp">Email Verification Code *</label>
+            <div class="otp-input-wrapper">
+              <input
+                type="text"
+                id="emailOtp"
+                formControlName="emailOtp"
+                placeholder="Enter OTP"
+                class="form-control"
+              >
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="sendEmailOtp()"
+                [disabled]="!signupForm.get('email')?.valid || emailOtpSent || isLoading"
+              >
+                {{ emailOtpSent ? 'OTP Sent' : 'Send OTP' }}
+              </button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-outline btn-verify"
+              (click)="verifyEmailOtp()"
+              [disabled]="!emailOtpSent || !signupForm.get('emailOtp')?.value || isLoading"
+            >
+              {{ emailOtpVerified ? '✓ Verified' : 'Verify OTP' }}
+            </button>
+            <div *ngIf="emailOtpError" class="error-message">
+              {{ emailOtpError }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Phone Verification -->
+        <div *ngIf="currentStep === 2" class="form-step">
+          <h2>Phone Verification</h2>
+
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              placeholder="+1234567890"
+              class="form-control"
+              [class.is-invalid]="submitted && phone?.invalid"
+            >
+            <div *ngIf="submitted && phone?.invalid" class="error-message">
+              <span *ngIf="phone?.errors?.['required']">Phone number is required</span>
+              <span *ngIf="phone?.errors?.['pattern']">Please enter a valid phone number (10+ digits)</span>
+            </div>
+          </div>
+
+          <div class="form-group otp-group">
+            <label for="phoneOtp">Phone Verification Code *</label>
+            <div class="otp-input-wrapper">
+              <input
+                type="text"
+                id="phoneOtp"
+                formControlName="phoneOtp"
+                placeholder="Enter OTP"
+                class="form-control"
+              >
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="sendPhoneOtp()"
+                [disabled]="!signupForm.get('phone')?.valid || phoneOtpSent || isLoading"
+              >
+                {{ phoneOtpSent ? 'OTP Sent' : 'Send OTP' }}
+              </button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-outline btn-verify"
+              (click)="verifyPhoneOtp()"
+              [disabled]="!phoneOtpSent || !signupForm.get('phoneOtp')?.value || isLoading"
+            >
+              {{ phoneOtpVerified ? '✓ Verified' : 'Verify OTP' }}
+            </button>
+            <div *ngIf="phoneOtpError" class="error-message">
+              {{ phoneOtpError }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Password -->
+        <div *ngIf="currentStep === 3" class="form-step">
+          <h2>Create Password</h2>
+
+          <div class="form-group">
+            <label for="password">Password *</label>
+            <div class="password-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
+                formControlName="password"
+                placeholder="Enter a strong password"
+                class="form-control"
+                [class.is-invalid]="submitted && password?.invalid"
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="togglePasswordVisibility()"
+              >
+                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div *ngIf="submitted && password?.invalid" class="error-message">
+              <span *ngIf="password?.errors?.['required']">Password is required</span>
+              <span *ngIf="password?.errors?.['minlength']">Password must be at least 8 characters</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password *</label>
+            <div class="password-wrapper">
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                id="confirmPassword"
+                formControlName="confirmPassword"
+                placeholder="Confirm your password"
+                class="form-control"
+                [class.is-invalid]="submitted && (confirmPassword?.invalid || !passwordsMatch())"
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="toggleConfirmPasswordVisibility()"
+              >
+                {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div *ngIf="submitted && (confirmPassword?.invalid || !passwordsMatch())" class="error-message">
+              <span *ngIf="confirmPassword?.errors?.['required']">Confirm password is required</span>
+              <span *ngIf="!passwordsMatch()">Passwords do not match</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Address -->
+        <div *ngIf="currentStep === 4" class="form-step">
+          <h2>Address Information</h2>
+
+          <div class="form-group">
+            <label for="dob">Founding Date *</label>
+            <input
+              type="date"
+              id="dob"
+              formControlName="dob"
+              class="form-control"
+              [class.is-invalid]="submitted && dob?.invalid"
+            >
+            <div *ngIf="submitted && dob?.invalid" class="error-message">
+              <span *ngIf="dob?.errors?.['required']">Founding date is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input
+              type="text"
+              id="city"
+              formControlName="city"
+              placeholder="San Francisco"
+              class="form-control"
+              [class.is-invalid]="submitted && city?.invalid"
+            >
+            <div *ngIf="submitted && city?.invalid" class="error-message">
+              <span *ngIf="city?.errors?.['required']">City is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="state">State/Province *</label>
+            <input
+              type="text"
+              id="state"
+              formControlName="state"
+              placeholder="California"
+              class="form-control"
+              [class.is-invalid]="submitted && state?.invalid"
+            >
+            <div *ngIf="submitted && state?.invalid" class="error-message">
+              <span *ngIf="state?.errors?.['required']">State is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="country">Country *</label>
+            <input
+              type="text"
+              id="country"
+              formControlName="country"
+              placeholder="United States"
+              class="form-control"
+              [class.is-invalid]="submitted && country?.invalid"
+            >
+            <div *ngIf="submitted && country?.invalid" class="error-message">
+              <span *ngIf="country?.errors?.['required']">Country is required</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5: Charity Details -->
+        <div *ngIf="currentStep === 5" class="form-step">
+          <h2>Charity Registration Details</h2>
+          <p class="step-subtitle">These details will be reviewed by our admin team for verification</p>
+
+          <div class="form-group">
+            <label for="charityRegistrationNumber">Registration Number *</label>
+            <input
+              type="text"
+              id="charityRegistrationNumber"
+              formControlName="charityRegistrationNumber"
+              placeholder="e.g., CHR-2024-001"
+              class="form-control"
+              [class.is-invalid]="submitted && charityRegistrationNumber?.invalid"
+            >
+            <div *ngIf="submitted && charityRegistrationNumber?.invalid" class="error-message">
+              <span *ngIf="charityRegistrationNumber?.errors?.['required']">Registration number is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="charityType">Type of Charity *</label>
+            <select
+              id="charityType"
+              formControlName="charityType"
+              class="form-control"
+              [class.is-invalid]="submitted && charityType?.invalid"
+            >
+              <option value="">Select charity type</option>
+              <option value="medical">Medical & Health</option>
+              <option value="education">Education</option>
+              <option value="food">Food & Hunger</option>
+              <option value="environment">Environmental</option>
+              <option value="disaster">Disaster Relief</option>
+              <option value="other">Other</option>
+            </select>
+            <div *ngIf="submitted && charityType?.invalid" class="error-message">
+              <span *ngIf="charityType?.errors?.['required']">Please select a charity type</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="focusAreas">Focus Areas *</label>
+            <input
+              type="text"
+              id="focusAreas"
+              formControlName="focusAreas"
+              placeholder="e.g., Healthcare, Children, Rural Development"
+              class="form-control"
+              [class.is-invalid]="submitted && focusAreas?.invalid"
+            >
+            <div *ngIf="submitted && focusAreas?.invalid" class="error-message">
+              <span *ngIf="focusAreas?.errors?.['required']">Focus areas are required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Organization Description *</label>
+            <textarea
+              id="description"
+              formControlName="description"
+              placeholder="Describe your organization, mission, and impact (minimum 50 characters)"
+              class="form-control"
+              rows="4"
+              [class.is-invalid]="submitted && description?.invalid"
+            ></textarea>
+            <div *ngIf="submitted && description?.invalid" class="error-message">
+              <span *ngIf="description?.errors?.['required']">Description is required</span>
+              <span *ngIf="description?.errors?.['minlength']">Description must be at least 50 characters</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="website">Website (Optional)</label>
+            <input
+              type="url"
+              id="website"
+              formControlName="website"
+              placeholder="https://yourwebsite.com"
+              class="form-control"
+              [class.is-invalid]="submitted && signupForm.get('website')?.invalid"
+            >
+            <div *ngIf="submitted && signupForm.get('website')?.invalid" class="error-message">
+              <span *ngIf="signupForm.get('website')?.errors?.['pattern']">Please enter a valid URL</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="taxExemptCertificate">Tax Exempt Certificate/Document *</label>
+            <div class="file-input-wrapper">
+              <input
+                type="file"
+                id="taxExemptCertificate"
+                formControlName="taxExemptCertificate"
+                (change)="onFileSelected($event)"
+                class="form-control"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                [class.is-invalid]="submitted && taxExemptCertificate?.invalid"
+              >
+              <p class="file-hint">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</p>
+            </div>
+            <div *ngIf="submitted && taxExemptCertificate?.invalid" class="error-message">
+              <span *ngIf="taxExemptCertificate?.errors?.['required']">Certificate is required</span>
+            </div>
+          </div>
+
+          <div class="approval-notice">
+            <p><strong>⏳ Note:</strong> Your registration will be reviewed by our admin team within 3-5 business days.</p>
+          </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="button-group">
+          <button
+            type="button"
+            class="btn btn-outline"
+            (click)="previousStep()"
+            [disabled]="currentStep === 1"
+          >
+            ← Previous
+          </button>
+
+          <button
+            type="button"
+            *ngIf="currentStep < totalSteps"
+            class="btn btn-primary"
+            (click)="nextStep()"
+            [disabled]="!isCurrentStepValid()"
+          >
+            Next →
+          </button>
+
+          <button
+            type="submit"
+            *ngIf="currentStep === totalSteps"
+            class="btn btn-primary"
+            [disabled]="isLoading"
+          >
+            {{ isLoading ? 'Submitting...' : 'Submit Registration' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Login Link -->
+      <div class="login-link">
+        Already have an account? <a routerLink="/login">Login here</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

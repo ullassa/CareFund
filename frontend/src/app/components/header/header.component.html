@@ -1,0 +1,36 @@
+<header class="header">
+  <div class="header-container">
+    <!-- Logo -->
+    <div class="logo">
+      <span class="logo-icon">❤️</span>
+      <span class="logo-text">CareFund</span>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="nav-menu">
+      <div class="nav-item donate-dropdown" (mouseleave)="closeDonateCauses()">
+        <button class="nav-link" (mouseenter)="donateCausesOpen = true">
+          💳 Donate
+          <span class="dropdown-arrow">▼</span>
+        </button>
+        
+        <div class="dropdown-menu" *ngIf="donateCausesOpen">
+          <a routerLink="/donate" [queryParams]="{ causeId: cause.id }"
+             *ngFor="let cause of causes"
+             class="dropdown-item"
+             (click)="closeDonateCauses()">
+            {{ cause.name }}
+          </a>
+        </div>
+      </div>
+
+      <a routerLink="/impact" class="nav-link">📊 Our Impact</a>
+      <a routerLink="/blogs" class="nav-link">📝 Blogs</a>
+    </nav>
+
+    <!-- Auth Buttons -->
+    <div class="auth-buttons">
+      <a routerLink="/login" class="btn btn-outline">Login</a>
+    </div>
+  </div>
+</header>

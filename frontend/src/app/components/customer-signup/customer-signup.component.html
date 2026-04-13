@@ -1,0 +1,326 @@
+<app-header></app-header>
+
+<div class="signup-page">
+  <div class="signup-container">
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width]="(currentStep / totalSteps * 100) + '%'"></div>
+      </div>
+      <div class="step-indicators">
+        <div class="step-indicator" *ngFor="let i of [1, 2, 3, 4]"
+             [class.active]="currentStep === i"
+             [class.completed]="i < currentStep">
+          <span>{{ i }}</span>
+          <p *ngIf="i === 1">Basic Info</p>
+          <p *ngIf="i === 2">Phone</p>
+          <p *ngIf="i === 3">Password</p>
+          <p *ngIf="i === 4">Address</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signup Form Card -->
+    <div class="signup-card">
+      <h1>Create Donor Account</h1>
+
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+
+        <!-- Step 1: Basic Info -->
+        <div *ngIf="currentStep === 1" class="form-step">
+          <h2>Basic Information</h2>
+
+          <!-- Name -->
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              placeholder="John Doe"
+              class="form-control"
+              [class.is-invalid]="submitted && name?.invalid"
+            >
+            <div *ngIf="submitted && name?.invalid" class="error-message">
+              <span *ngIf="name?.errors?.['required']">Name is required</span>
+              <span *ngIf="name?.errors?.['minlength']">Name must be at least 3 characters</span>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              placeholder="john@example.com"
+              class="form-control"
+              [class.is-invalid]="submitted && email?.invalid"
+            >
+            <div *ngIf="submitted && email?.invalid" class="error-message">
+              <span *ngIf="email?.errors?.['required']">Email is required</span>
+              <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+            </div>
+          </div>
+
+          <!-- Email OTP -->
+          <div class="form-group otp-group">
+            <label for="emailOtp">Email Verification Code *</label>
+            <div class="otp-input-wrapper">
+              <input
+                type="text"
+                id="emailOtp"
+                formControlName="emailOtp"
+                placeholder="Enter OTP"
+                class="form-control"
+              >
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="sendEmailOtp()"
+                [disabled]="!signupForm.get('email')?.valid || emailOtpSent || isLoading"
+              >
+                {{ emailOtpSent ? 'OTP Sent' : 'Send OTP' }}
+              </button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-outline btn-verify"
+              (click)="verifyEmailOtp()"
+              [disabled]="!emailOtpSent || !signupForm.get('emailOtp')?.value || isLoading"
+            >
+              {{ emailOtpVerified ? '✓ Verified' : 'Verify OTP' }}
+            </button>
+            <div *ngIf="emailOtpError" class="error-message">
+              {{ emailOtpError }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Phone Verification -->
+        <div *ngIf="currentStep === 2" class="form-step">
+          <h2>Phone Verification</h2>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              placeholder="+1234567890"
+              class="form-control"
+              [class.is-invalid]="submitted && phone?.invalid"
+            >
+            <div *ngIf="submitted && phone?.invalid" class="error-message">
+              <span *ngIf="phone?.errors?.['required']">Phone number is required</span>
+              <span *ngIf="phone?.errors?.['pattern']">Please enter a valid phone number (10+ digits)</span>
+            </div>
+          </div>
+
+          <!-- Phone OTP -->
+          <div class="form-group otp-group">
+            <label for="phoneOtp">Phone Verification Code *</label>
+            <div class="otp-input-wrapper">
+              <input
+                type="text"
+                id="phoneOtp"
+                formControlName="phoneOtp"
+                placeholder="Enter OTP"
+                class="form-control"
+              >
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="sendPhoneOtp()"
+                [disabled]="!signupForm.get('phone')?.valid || phoneOtpSent || isLoading"
+              >
+                {{ phoneOtpSent ? 'OTP Sent' : 'Send OTP' }}
+              </button>
+            </div>
+            <button
+              type="button"
+              class="btn btn-outline btn-verify"
+              (click)="verifyPhoneOtp()"
+              [disabled]="!phoneOtpSent || !signupForm.get('phoneOtp')?.value || isLoading"
+            >
+              {{ phoneOtpVerified ? '✓ Verified' : 'Verify OTP' }}
+            </button>
+            <div *ngIf="phoneOtpError" class="error-message">
+              {{ phoneOtpError }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Password -->
+        <div *ngIf="currentStep === 3" class="form-step">
+          <h2>Create Password</h2>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label for="password">Password *</label>
+            <div class="password-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
+                formControlName="password"
+                placeholder="Enter a strong password"
+                class="form-control"
+                [class.is-invalid]="submitted && password?.invalid"
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="togglePasswordVisibility()"
+              >
+                {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div *ngIf="submitted && password?.invalid" class="error-message">
+              <span *ngIf="password?.errors?.['required']">Password is required</span>
+              <span *ngIf="password?.errors?.['minlength']">Password must be at least 8 characters</span>
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password *</label>
+            <div class="password-wrapper">
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                id="confirmPassword"
+                formControlName="confirmPassword"
+                placeholder="Confirm your password"
+                class="form-control"
+                [class.is-invalid]="submitted && (confirmPassword?.invalid || !passwordsMatch())"
+              >
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="toggleConfirmPasswordVisibility()"
+              >
+                {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div *ngIf="submitted && (confirmPassword?.invalid || !passwordsMatch())" class="error-message">
+              <span *ngIf="confirmPassword?.errors?.['required']">Confirm password is required</span>
+              <span *ngIf="!passwordsMatch()">Passwords do not match</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Address -->
+        <div *ngIf="currentStep === 4" class="form-step">
+          <h2>Address Information</h2>
+
+          <!-- Date of Birth -->
+          <div class="form-group">
+            <label for="dob">Date of Birth *</label>
+            <input
+              type="date"
+              id="dob"
+              formControlName="dob"
+              class="form-control"
+              [class.is-invalid]="submitted && dob?.invalid"
+            >
+            <div *ngIf="submitted && dob?.invalid" class="error-message">
+              <span *ngIf="dob?.errors?.['required']">Date of birth is required</span>
+            </div>
+          </div>
+
+          <!-- City -->
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input
+              type="text"
+              id="city"
+              formControlName="city"
+              placeholder="San Francisco"
+              class="form-control"
+              [class.is-invalid]="submitted && city?.invalid"
+            >
+            <div *ngIf="submitted && city?.invalid" class="error-message">
+              <span *ngIf="city?.errors?.['required']">City is required</span>
+            </div>
+          </div>
+
+          <!-- State -->
+          <div class="form-group">
+            <label for="state">State/Province *</label>
+            <input
+              type="text"
+              id="state"
+              formControlName="state"
+              placeholder="California"
+              class="form-control"
+              [class.is-invalid]="submitted && state?.invalid"
+            >
+            <div *ngIf="submitted && state?.invalid" class="error-message">
+              <span *ngIf="state?.errors?.['required']">State is required</span>
+            </div>
+          </div>
+
+          <!-- Country -->
+          <div class="form-group">
+            <label for="country">Country *</label>
+            <input
+              type="text"
+              id="country"
+              formControlName="country"
+              placeholder="United States"
+              class="form-control"
+              [class.is-invalid]="submitted && country?.invalid"
+            >
+            <div *ngIf="submitted && country?.invalid" class="error-message">
+              <span *ngIf="country?.errors?.['required']">Country is required</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div *ngIf="errorMessage" class="alert alert-error">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="button-group">
+          <button
+            type="button"
+            class="btn btn-outline"
+            (click)="previousStep()"
+            [disabled]="currentStep === 1"
+          >
+            ← Previous
+          </button>
+
+          <button
+            type="button"
+            *ngIf="currentStep < totalSteps"
+            class="btn btn-primary"
+            (click)="nextStep()"
+            [disabled]="!isCurrentStepValid()"
+          >
+            Next →
+          </button>
+
+          <button
+            type="submit"
+            *ngIf="currentStep === totalSteps"
+            class="btn btn-primary"
+            [disabled]="isLoading"
+          >
+            {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+          </button>
+        </div>
+      </form>
+
+      <!-- Login Link -->
+      <div class="login-link">
+        Already have an account? <a routerLink="/login">Login here</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
