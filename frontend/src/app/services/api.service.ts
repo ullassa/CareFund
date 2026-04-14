@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -50,5 +51,21 @@ export class ApiService {
 
   registerCharity(data: any) {
     return this.http.post(`${this.baseUrl}/auth/register-charity`, data);
+  }
+
+  registerCustomer(data: any) {
+    return this.http.post(`${this.baseUrl}/auth/register-customer`, data);
+  }
+
+  getPublicCharities() {
+    return this.http.get(`${this.baseUrl}/charities/public`).pipe(
+      catchError(() => this.http.get(`${this.baseUrl}/Charities/public`).pipe(
+        catchError(() => this.http.get(`${this.baseUrl}/auth/public-charities`))
+      ))
+    );
+  }
+
+  getPublicCharitiesFromAuth() {
+    return this.http.get(`${this.baseUrl}/auth/public-charities`);
   }
 }

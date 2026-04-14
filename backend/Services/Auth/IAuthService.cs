@@ -22,6 +22,12 @@ namespace CareFund.Services.Auth
             string phoneNumber, IOtpService otpService);
 
         /// <summary>
+        /// Registers a new customer with verified phone and email
+        /// </summary>
+        User? RegisterCustomer(string name, string email, string password,
+            string phoneNumber, DateTime? dob, string city, IOtpService otpService);
+
+        /// <summary>
         /// Gets user by email
         /// </summary>
         User? GetUserByEmail(string email);

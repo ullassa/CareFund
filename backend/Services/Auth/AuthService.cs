@@ -128,6 +128,75 @@ namespace CareFund.Services.Auth
         }
 
         /// <summary>
+        /// Registers a new customer account
+        /// Requires verified phone and email
+        /// </summary>
+        public User? RegisterCustomer(string name, string email, string password,
+            string phoneNumber, DateTime? dob, string city, IOtpService otpService)
+        {
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                _logger.LogWarning("Customer registration attempt with missing fields");
+                return null;
+            }
+
+            if (!otpService.IsPhoneVerified(phoneNumber))
+            {
+                _logger.LogWarning($"Customer registration failed: Phone not verified - {phoneNumber}");
+                return null;
+            }
+
+            if (!otpService.IsEmailVerified(email))
+            {
+                _logger.LogWarning($"Customer registration failed: Email not verified - {email}");
+                return null;
+            }
+
+            if (EmailExists(email))
+            {
+                _logger.LogWarning($"Customer registration failed: Email already exists - {email}");
+                return null;
+            }
+
+            var user = new User
+            {
+                UserName = name,
+                Email = email,
+                PasswordHash = password,
+                PhoneNumber = phoneNumber,
+                UserRole = UserRole.Customer,
+                IsEmailVerified = true,
+                IsPhoneVerified = true,
+                IsActive = true
+            };
+
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            var customer = new Customer
+            {
+                UserId = user.UserId,
+                DOB = dob ?? DateTime.UtcNow,
+                City = string.IsNullOrWhiteSpace(city) ? "Unknown" : city,
+                Gender = "Not Specified",
+                CreatedAt = DateTime.UtcNow,
+                IsAnonymous = false
+            };
+
+            _context.Customers.Add(customer);
+            _context.SaveChanges();
+
+            otpService.ClearPhoneVerification(phoneNumber);
+            otpService.ClearEmailVerification(email);
+
+            _logger.LogInformation($"Customer created: {email}");
+            return user;
+        }
+
+        /// <summary>
         /// Gets user by email
         /// </summary>
         public User? GetUserByEmail(string email)

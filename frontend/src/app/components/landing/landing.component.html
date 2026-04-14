@@ -1,68 +1,105 @@
 <app-header></app-header>
 
 <main class="landing-page">
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Make a Difference Today</h1>
-      <p>Connect with causes that matter. Whether you want to donate or make an impact, CareFund is your platform for change.</p>
-      
-      <div class="hero-buttons">
-        <button class="btn btn-primary" routerLink="/customer-signup">
-          💳 Donor Signup
-        </button>
-        <button class="btn btn-secondary" routerLink="/charity-signup">
-          🏢 Charity Signup
-        </button>
-      </div>
-    </div>
-    <div class="hero-image">
-      <div class="hero-illustration">🎯</div>
-    </div>
-  </section>
+  <section class="hero-shell">
+    <div class="hero-card">
+      <div class="hero-copy">
+        <span class="eyebrow">CareFund Community</span>
+        <h1>{{ heroTitle }}</h1>
+        <p>{{ heroSubtitle }}</p>
 
-  <!-- How It Works Section -->
-  <section class="how-it-works">
-    <div class="container">
-      <h2>How It Works</h2>
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <h3>Sign Up</h3>
-          <p>Create your account as a donor or charity partner</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" routerLink="/donate">Donate now</button>
+          <button class="btn btn-secondary" routerLink="/charity-signup">Start a charity</button>
         </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <h3>Browse Causes</h3>
-          <p>Explore verified causes and charities</p>
-        </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <h3>Donate</h3>
-          <p>Make a secure contribution to your chosen cause</p>
-        </div>
-        <div class="step">
-          <div class="step-number">4</div>
-          <h3>Track Impact</h3>
-          <p>See how your donation creates real change</p>
-        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-badge">❤️ UNTrusted giving</div>
+        <div class="hero-illustration"></div>
       </div>
     </div>
   </section>
 
-  <!-- Featured Causes Section -->
-  <section class="featured-causes">
+  <section class="stats-strip">
+    <div class="container stats-grid">
+      <div class="stat-card" *ngFor="let stat of statistics">
+        <div class="stat-icon">{{ stat.icon }}</div>
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="discover-section">
     <div class="container">
-      <h2>Featured Causes</h2>
-      <div class="causes-grid">
-        <div class="cause-card" *ngFor="let cause of causes">
-          <div class="cause-icon">{{ cause.icon }}</div>
-          <h3>{{ cause.name }}</h3>
-          <p>{{ cause.description }}</p>
-          <button class="btn btn-outline" routerLink="/donate" [queryParams]="{ causeId: cause.id }">
-            Donate Now
-          </button>
+      <div class="section-head">
+        <div>
+          <h2>Available charities</h2>
+          <p>Browse live charities from the platform and choose where your support goes.</p>
         </div>
+        <div class="search-box">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Search charity, cause, or location"
+          >
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-state">Loading charities...</div>
+
+      <div *ngIf="!isLoading && filteredCharities.length === 0" class="empty-state">
+        <h3>No charities found</h3>
+        <p>Try another search or check back once charities are added in SSMS.</p>
+      </div>
+
+      <div class="charity-grid" *ngIf="visibleCharities.length > 0">
+        <article class="charity-card" *ngFor="let charity of visibleCharities">
+          <div class="charity-top">
+            <div>
+              <h3>{{ charity.charityName }}</h3>
+              <p class="charity-cause">{{ charity.cause || 'Community support' }}</p>
+            </div>
+            <span class="status-pill" [class.approved]="charity.status === 'Approved'" [class.pending]="charity.status === 'Pending'">
+              {{ charity.status }}
+            </span>
+          </div>
+
+          <p class="charity-desc">
+            {{ charity.description || 'This charity is listed on CareFund and ready to receive support.' }}
+          </p>
+
+          <div class="charity-meta">
+            <span>📍 {{ charity.location || 'Location not set' }}</span>
+            <span>✉️ {{ charity.email || 'Email not set' }}</span>
+          </div>
+
+          <div class="charity-actions">
+              <button
+                class="btn btn-outline"
+                routerLink="/donate"
+                [queryParams]="{
+                  charityId: charity.charityId,
+                  charityName: charity.charityName,
+                  description: charity.description,
+                  cause: charity.cause,
+                  location: charity.location,
+                  email: charity.email,
+                  phone: charity.phoneNumber
+                }"
+              >
+                Donate Now
+              </button>
+            <button class="btn btn-secondary" routerLink="/login">View more</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="pagination-row" *ngIf="filteredCharities.length > pageSize">
+        <button class="btn btn-outline" (click)="previousPage()" [disabled]="!hasPreviousPage">Previous</button>
+        <span class="page-indicator">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button class="btn btn-primary" (click)="nextPage()" [disabled]="!hasNextPage">Next</button>
       </div>
     </div>
   </section>
@@ -81,28 +118,14 @@
     </div>
   </section>
 
-  <!-- Testimonials Section -->
-  <section class="testimonials">
-    <div class="container">
-      <h2>What People Say</h2>
-      <div class="testimonials-grid">
-        <div class="testimonial-card" *ngFor="let testimonial of testimonials">
-          <p class="testimonial-text">"{{ testimonial.message }}"</p>
-          <p class="testimonial-author">{{ testimonial.name }}</p>
-          <p class="testimonial-role">{{ testimonial.role }}</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- CTA Section -->
   <section class="cta-section">
     <div class="container">
-      <h2>Ready to Make an Impact?</h2>
-      <p>Join thousands of people making a difference through CareFund</p>
+      <h2>Ready to make an impact?</h2>
+      <p>Join CareFund and support the charities that matter most to you.</p>
       <div class="cta-buttons">
-        <button class="btn btn-primary" routerLink="/login">Start Donating</button>
-        <button class="btn btn-secondary" routerLink="/charity-signup">Become a Partner</button>
+        <button class="btn btn-primary" routerLink="/login">Sign in</button>
+        <button class="btn btn-secondary" routerLink="/customer-signup">Create donor account</button>
       </div>
     </div>
   </section>
