@@ -30,8 +30,60 @@ export class CustomerSignupComponent implements OnInit {
   phoneOtpVerified = false;
   emailOtpError = '';
   phoneOtpError = '';
+  emailOtpInfo = '';
+  phoneOtpInfo = '';
 
   constructor(private fb: FormBuilder, private api: ApiService) {}
+
+  private normalizePhone(phone: string): string {
+    const trimmed = (phone ?? '').trim();
+    const sanitized = trimmed.replace(/\s|\-|\(|\)/g, '');
+    if (!sanitized) return '';
+    if (sanitized.startsWith('+')) return sanitized;
+    if (/^\d{10}$/.test(sanitized)) return `+91${sanitized}`;
+    if (/^91\d{10}$/.test(sanitized)) return `+${sanitized}`;
+    if (/^\d+$/.test(sanitized)) return `+${sanitized}`;
+    return sanitized;
+  }
+
+  private normalizeEmail(email: string): string {
+    return (email ?? '').trim().toLowerCase();
+  }
+
+  private getApiErrorMessage(error: any, fallback: string): string {
+    if (error?.status === 0) {
+      return 'Cannot connect to backend. Please ensure API is running on http://localhost:5292 and CORS is enabled.';
+    }
+
+    if (typeof error?.error === 'string' && error.error.trim()) {
+      try {
+        const parsed = JSON.parse(error.error);
+        const parsedMessage = parsed?.message;
+        const parsedHint = parsed?.hint;
+        if (parsedMessage && parsedHint) {
+          return `${parsedMessage} (${parsedHint})`;
+        }
+        if (parsedMessage) {
+          return parsedMessage;
+        }
+      } catch {
+        return error.error;
+      }
+    }
+
+    const message = error?.error?.message;
+    const hint = error?.error?.hint;
+    if (message && hint) {
+      return `${message} (${hint})`;
+    }
+    if (message) {
+      return message;
+    }
+    if (error?.message) {
+      return `${fallback} (${error.message})`;
+    }
+    return fallback;
+  }
 
   ngOnInit(): void {
     this.initializeForm();
@@ -45,7 +97,7 @@ export class CustomerSignupComponent implements OnInit {
       emailOtp: [''],
       
       // Step 2: Phone Verification
-      phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10,}$/)]],
+      phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9]{10,15}$/)]],
       phoneOtp: [''],
       
       // Step 3: Password
@@ -96,15 +148,18 @@ export class CustomerSignupComponent implements OnInit {
 
   // OTP Methods
   sendEmailOtp(): void {
-    const email = this.signupForm.get('email')?.value;
+    const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
+    this.signupForm.get('email')?.setValue(email);
     if (email && this.signupForm.get('email')?.valid) {
       this.isLoading = true;
       this.emailOtpError = '';
+      this.emailOtpInfo = '';
       this.api.sendEmailOtp(email).subscribe({
         next: (response: any) => {
           this.isLoading = false;
           if (response.success) {
             this.emailOtpSent = true;
+            this.emailOtpInfo = response.message || 'OTP request accepted.';
             console.log('OTP sent to email:', email);
           } else {
             this.emailOtpError = response.message || 'Failed to send OTP';
@@ -112,7 +167,7 @@ export class CustomerSignupComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          this.emailOtpError = 'Error sending OTP. Please try again.';
+          this.emailOtpError = this.getApiErrorMessage(error, 'Error sending OTP. Please try again.');
           console.error('Error sending email OTP:', error);
         }
       });
@@ -120,16 +175,19 @@ export class CustomerSignupComponent implements OnInit {
   }
 
   verifyEmailOtp(): void {
-    const email = this.signupForm.get('email')?.value;
+    const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
+    this.signupForm.get('email')?.setValue(email);
     const otp = this.signupForm.get('emailOtp')?.value;
     if (email && otp) {
       this.isLoading = true;
       this.emailOtpError = '';
+      this.emailOtpInfo = '';
       this.api.verifyEmailOtp(email, otp).subscribe({
         next: (response: any) => {
           this.isLoading = false;
           if (response.success) {
             this.emailOtpVerified = true;
+            this.emailOtpInfo = response.message || 'Email verified successfully.';
             console.log('Email verified successfully');
           } else {
             this.emailOtpError = response.message || 'Invalid OTP';
@@ -137,7 +195,7 @@ export class CustomerSignupComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          this.emailOtpError = 'Error verifying OTP. Please try again.';
+          this.emailOtpError = this.getApiErrorMessage(error, 'Error verifying OTP. Please try again.');
           console.error('Error verifying email OTP:', error);
         }
       });
@@ -145,15 +203,20 @@ export class CustomerSignupComponent implements OnInit {
   }
 
   sendPhoneOtp(): void {
-    const phone = this.signupForm.get('phone')?.value;
+    const phone = this.normalizePhone(this.signupForm.get('phone')?.value ?? '');
+    this.signupForm.get('phone')?.setValue(phone);
+    this.signupForm.get('phone')?.markAsTouched();
+    this.signupForm.get('phone')?.updateValueAndValidity();
     if (phone && this.signupForm.get('phone')?.valid) {
       this.isLoading = true;
       this.phoneOtpError = '';
+      this.phoneOtpInfo = '';
       this.api.sendPhoneOtp(phone).subscribe({
         next: (response: any) => {
           this.isLoading = false;
           if (response.success) {
             this.phoneOtpSent = true;
+            this.phoneOtpInfo = response.message || 'OTP request accepted.';
             console.log('OTP sent to phone:', phone);
           } else {
             this.phoneOtpError = response.message || 'Failed to send OTP';
@@ -161,24 +224,35 @@ export class CustomerSignupComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          this.phoneOtpError = 'Error sending OTP. Please try again.';
+          this.phoneOtpError = this.getApiErrorMessage(error, 'Error sending OTP. Please try again.');
           console.error('Error sending phone OTP:', error);
         }
       });
+      return;
     }
+
+    this.phoneOtpError = 'Please enter a valid phone number (example: 9380827703 or +919380827703).';
   }
 
   verifyPhoneOtp(): void {
-    const phone = this.signupForm.get('phone')?.value;
+    const phone = this.normalizePhone(this.signupForm.get('phone')?.value ?? '');
+    this.signupForm.get('phone')?.setValue(phone);
     const otp = this.signupForm.get('phoneOtp')?.value;
+    if (!phone || !this.signupForm.get('phone')?.valid) {
+      this.phoneOtpError = 'Please enter a valid phone number before verifying OTP.';
+      return;
+    }
+
     if (phone && otp) {
       this.isLoading = true;
       this.phoneOtpError = '';
+      this.phoneOtpInfo = '';
       this.api.verifyPhoneOtp(phone, otp).subscribe({
         next: (response: any) => {
           this.isLoading = false;
           if (response.success) {
             this.phoneOtpVerified = true;
+            this.phoneOtpInfo = response.message || 'Phone verified successfully.';
             console.log('Phone verified successfully');
           } else {
             this.phoneOtpError = response.message || 'Invalid OTP';
@@ -186,7 +260,7 @@ export class CustomerSignupComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          this.phoneOtpError = 'Error verifying OTP. Please try again.';
+          this.phoneOtpError = this.getApiErrorMessage(error, 'Error verifying OTP. Please try again.');
           console.error('Error verifying phone OTP:', error);
         }
       });
@@ -220,7 +294,15 @@ export class CustomerSignupComponent implements OnInit {
         this.isLoading = false;
         console.log('Registration successful');
       }, 2000);
+      return;
     }
+
+    if (!this.emailOtpVerified || !this.phoneOtpVerified) {
+      this.errorMessage = 'Please verify both email OTP and phone OTP before creating account.';
+      return;
+    }
+
+    this.errorMessage = 'Please complete all required fields.';
   }
 
   // Getter methods

@@ -95,6 +95,9 @@
             <div *ngIf="emailOtpError" class="error-message">
               {{ emailOtpError }}
             </div>
+            <div *ngIf="emailOtpInfo" class="success-message">
+              {{ emailOtpInfo }}
+            </div>
           </div>
         </div>
 
@@ -149,6 +152,9 @@
             </button>
             <div *ngIf="phoneOtpError" class="error-message">
               {{ phoneOtpError }}
+            </div>
+            <div *ngIf="phoneOtpInfo" class="success-message">
+              {{ phoneOtpInfo }}
             </div>
           </div>
         </div>
