@@ -1,0 +1,63 @@
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-content">
+      <!-- Brand Section -->
+      <div class="footer-section">
+        <div class="footer-brand">
+          <span class="brand-icon">❤️</span>
+          <span class="brand-text">CareFund</span>
+        </div>
+        <p class="brand-description">Making a difference, one donation at a time.</p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
+          <li *ngFor="let link of quickLinks">
+            <a [routerLink]="link.path">{{ link.label }}</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Legal Links -->
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul class="footer-links">
+          <li *ngFor="let link of legalLinks">
+            <a [routerLink]="link.path">{{ link.label }}</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Social Links -->
+      <div class="footer-section">
+        <h4>Follow Us</h4>
+        <div class="social-links">
+          <a *ngFor="let social of socialLinks"
+             [href]="social.url"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="social-link"
+             title="{{ social.label }}">
+            {{ social.icon }}
+          </a>
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="footer-section">
+        <h4>Contact Us</h4>
+        <p class="contact-info">
+          <span>📧 info&#64;carefund.com</span><br>
+          <span>📱 +1 (555) 123-4567</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <p>&copy; {{ currentYear }} CareFund. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

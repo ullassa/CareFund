@@ -226,12 +226,39 @@ namespace CareFund.Services.Otp
 
         // --- Private Helper Methods ---
 
-        private static string NormalizePhone(string phone) =>
-            phone.Trim()
-                 .Replace(" ", "")
-                 .Replace("-", "")
-                 .Replace("(", "")
-                 .Replace(")", "");
+        private static string NormalizePhone(string phone)
+        {
+            var sanitized = phone.Trim()
+                                 .Replace(" ", "")
+                                 .Replace("-", "")
+                                 .Replace("(", "")
+                                 .Replace(")", "");
+
+            if (string.IsNullOrWhiteSpace(sanitized))
+                return sanitized;
+
+            // Convert 00-prefixed international numbers to + format
+            if (sanitized.StartsWith("00"))
+                return "+" + sanitized[2..];
+
+            // Already international format
+            if (sanitized.StartsWith("+"))
+                return sanitized;
+
+            // Default India local mobile (10 digits) to +91
+            if (sanitized.All(char.IsDigit) && sanitized.Length == 10)
+                return "+91" + sanitized;
+
+            // If India country code entered without +, normalize to +91...
+            if (sanitized.All(char.IsDigit) && sanitized.Length == 12 && sanitized.StartsWith("91"))
+                return "+" + sanitized;
+
+            // Fallback: add + for all-digit values
+            if (sanitized.All(char.IsDigit))
+                return "+" + sanitized;
+
+            return sanitized;
+        }
 
         private static string PhoneKey(string phone) => $"phone:{phone.Trim()}";
         private static string EmailKey(string email) => $"email:{email.Trim().ToLowerInvariant()}";
@@ -270,7 +297,13 @@ namespace CareFund.Services.Otp
 
                 var sid = _config["Twilio:AccountSid"]!;
                 var token = _config["Twilio:AuthToken"]!;
-                var from = _config["Twilio:FromPhone"]!;
+                var from = NormalizeTwilioPhone(_config["Twilio:FromPhone"]!);
+
+                if (string.IsNullOrWhiteSpace(from) || !from.StartsWith("+"))
+                {
+                    _logger.LogWarning($"Twilio FromPhone is invalid: '{_config["Twilio:FromPhone"]}'");
+                    return (false, "Twilio sender number is invalid. Use a full E.164 number like +14155552671.");
+                }
 
                 var url = $"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json";
                 var client = _httpClientFactory.CreateClient();
@@ -287,13 +320,65 @@ namespace CareFund.Services.Otp
                 var auth = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes($"{sid}:{token}"));
                 request.Headers.Authorization = new AuthenticationHeaderValue("Basic", auth);
 
-                _logger.LogInformation($"Sending SMS to {toPhone}");
+                _logger.LogInformation($"Sending SMS to {toPhone} from {from}");
                 var response = await client.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation($"SMS sent successfully to {toPhone}");
-                    return (true, "SMS sent");
+                    var content = await response.Content.ReadAsStringAsync();
+                    string? messageSid = null;
+                    string? messageStatus = null;
+
+                    try
+                    {
+                        using var json = JsonDocument.Parse(content);
+                        var root = json.RootElement;
+                        messageSid = root.TryGetProperty("sid", out var sidNode) ? sidNode.GetString() : null;
+                        messageStatus = root.TryGetProperty("status", out var statusNode) ? statusNode.GetString() : null;
+                    }
+                    catch
+                    {
+                        // Twilio success response could not be parsed; keep generic success logs.
+                    }
+
+                    _logger.LogInformation($"SMS accepted by Twilio for {toPhone}. Sid: {messageSid ?? "unknown"}, InitialStatus: {messageStatus ?? "unknown"}");
+
+                    if (!string.IsNullOrWhiteSpace(messageSid))
+                    {
+                        // Quick delivery check so UI can receive immediate actionable feedback
+                        await Task.Delay(2500);
+                        var details = await GetTwilioMessageStatusDetailsAsync(messageSid, sid, token);
+                        if (!string.IsNullOrWhiteSpace(details.Status))
+                        {
+                            _logger.LogInformation($"Twilio delivery status for {messageSid}: {details.Status} (error_code={details.ErrorCode ?? "n/a"}, error_message={details.ErrorMessage ?? "n/a"})");
+                        }
+
+                        var failedStatuses = new[] { "failed", "undelivered", "canceled" };
+                        if (!string.IsNullOrWhiteSpace(details.Status) && failedStatuses.Contains(details.Status, StringComparer.OrdinalIgnoreCase))
+                        {
+                            var errorText = !string.IsNullOrWhiteSpace(details.ErrorCode)
+                                ? $"Twilio {details.ErrorCode}: {details.ErrorMessage ?? details.Status}"
+                                : $"SMS {details.Status}: {details.ErrorMessage ?? "Carrier or account restrictions"}";
+
+                            return (false, errorText);
+                        }
+
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await Task.Delay(5000);
+                                var finalDetails = await GetTwilioMessageStatusDetailsAsync(messageSid, sid, token);
+                                _logger.LogInformation($"Twilio follow-up status for {messageSid}: {finalDetails.Status ?? "unknown"} (error_code={finalDetails.ErrorCode ?? "n/a"}, error_message={finalDetails.ErrorMessage ?? "n/a"})");
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning($"Unable to fetch Twilio final delivery status for {messageSid}: {ex.Message}");
+                            }
+                        });
+                    }
+
+                    return (true, "SMS accepted by Twilio");
                 }
 
                 var error = await response.Content.ReadAsStringAsync();
@@ -306,6 +391,7 @@ namespace CareFund.Services.Otp
                     var root = json.RootElement;
                     var code = root.TryGetProperty("code", out var c) ? c.ToString() : "";
                     var message = root.TryGetProperty("message", out var m) ? m.GetString() : "Twilio request failed";
+                    var moreInfo = root.TryGetProperty("more_info", out var mi) ? mi.GetString() : null;
 
                     if (!string.IsNullOrWhiteSpace(code))
                     {
@@ -314,6 +400,11 @@ namespace CareFund.Services.Otp
                     else
                     {
                         twilioMessage = $"SMS delivery failed: {message}";
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(moreInfo))
+                    {
+                        twilioMessage += $" ({moreInfo})";
                     }
                 }
                 catch
@@ -437,8 +528,68 @@ namespace CareFund.Services.Otp
             !string.IsNullOrWhiteSpace(_config["Twilio:AuthToken"]) &&
             !string.IsNullOrWhiteSpace(_config["Twilio:FromPhone"]);
 
+        private static string NormalizeTwilioPhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+                return string.Empty;
+
+            var sanitized = phone.Trim()
+                                 .Replace(" ", "")
+                                 .Replace("-", "")
+                                 .Replace("(", "")
+                                 .Replace(")", "");
+
+            if (sanitized.StartsWith("00"))
+                return "+" + sanitized[2..];
+
+            if (sanitized.StartsWith("+"))
+                return sanitized;
+
+            if (sanitized.All(char.IsDigit))
+                return "+" + sanitized;
+
+            return sanitized;
+        }
+
         private bool HasBrevoApiKey() =>
             !string.IsNullOrWhiteSpace(_config["Brevo:ApiKey"]);
+
+        private async Task<(string? Status, string? ErrorCode, string? ErrorMessage)> GetTwilioMessageStatusDetailsAsync(string messageSid, string accountSid, string authToken)
+        {
+            var client = _httpClientFactory.CreateClient();
+            var url = $"https://api.twilio.com/2010-04-01/Accounts/{accountSid}/Messages/{messageSid}.json";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var auth = Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes($"{accountSid}:{authToken}"));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", auth);
+
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning($"Twilio message status lookup failed for {messageSid}: {response.StatusCode} - {content}");
+                return (null, null, null);
+            }
+
+            try
+            {
+                using var json = JsonDocument.Parse(content);
+                var root = json.RootElement;
+                var status = root.TryGetProperty("status", out var statusNode) ? statusNode.GetString() : null;
+                var errorCode = root.TryGetProperty("error_code", out var errorCodeNode) ? errorCodeNode.GetRawText() : null;
+                var errorMessage = root.TryGetProperty("error_message", out var errorMessageNode) ? errorMessageNode.GetString() : null;
+
+                if (!string.IsNullOrWhiteSpace(errorCode) && errorCode != "null")
+                {
+                    return (status, errorCode, errorMessage);
+                }
+
+                return (status, null, errorMessage);
+            }
+            catch
+            {
+                return (null, null, null);
+            }
+        }
 
         private async Task<(bool Success, string Message)> SendEmailViaBrevoApiAsync(string toEmail, string otp, string fromEmail)
         {

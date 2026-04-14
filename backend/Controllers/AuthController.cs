@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using CareFund.Models;
 using CareFund.Services.Auth;
 using CareFund.Services.Jwt;
@@ -22,15 +23,26 @@ public class AuthController : ControllerBase
 
     // 🔐 LOGIN
     [HttpPost("login")]
-    public IActionResult Login(LoginRequest loginUser)
+    public IActionResult Login([FromBody] LoginRequest loginUser)
     {
-        var user = _authService.AuthenticateUser(loginUser.Email, loginUser.PasswordHash);
+        try
+        {
+            var user = _authService.AuthenticateUser(loginUser.Email, loginUser.PasswordHash);
 
-        if (user == null)
-            return Unauthorized(new { success = false, message = "Invalid credentials" });
+            if (user == null)
+                return Unauthorized(new { success = false, message = "Invalid credentials" });
 
-        var token = _jwtService.GenerateToken(user);
-        return Ok(new { success = true, token = token, message = "Login successful" });
+            var token = _jwtService.GenerateToken(user);
+            return Ok(new { success = true, token = token, message = "Login successful" });
+        }
+        catch (SqlException ex)
+        {
+            return StatusCode(503, new { success = false, message = "SQL Server connection failed.", details = ex.Message, errorNumber = ex.Number });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(503, new { success = false, message = "Database connection failed. Check SQL Server and connection string.", details = ex.Message });
+        }
     }
 
     // -----------------------
@@ -95,17 +107,47 @@ public class AuthController : ControllerBase
 
     // 🏢 REGISTER CHARITY
     [HttpPost("register-charity")]
-    public IActionResult RegisterCharity(RegisterCharityDto dto)
+    public IActionResult RegisterCharity([FromBody] RegisterCharityDto dto)
     {
         if (dto == null)
             return BadRequest(new { success = false, message = "Request body is required." });
 
-        var user = _authService.RegisterCharity(dto.CharityName, dto.Email, dto.Password,
-            dto.PhoneNumber, _otpService);
+        var charityName = string.IsNullOrWhiteSpace(dto.CharityName) ? dto.Name : dto.CharityName;
+        var email = dto.Email?.Trim().ToLowerInvariant();
+        var phone = dto.PhoneNumber?.Trim();
 
-        if (user == null)
-            return BadRequest(new { success = false, message = "Registration failed. Verify phone and email first." });
+        if (string.IsNullOrWhiteSpace(charityName) || string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(dto.Password) || string.IsNullOrWhiteSpace(phone))
+        {
+            return BadRequest(new { success = false, message = "Missing required fields. Charity name, email, password, and phone are required." });
+        }
 
-        return Ok(new { success = true, message = "Charity registered successfully", userId = user.UserId });
+        if (!_otpService.IsEmailVerified(email))
+            return BadRequest(new { success = false, message = "Email is not verified yet." });
+
+        if (!_otpService.IsPhoneVerified(phone))
+            return BadRequest(new { success = false, message = "Phone is not verified yet." });
+
+        if (_authService.EmailExists(email))
+            return BadRequest(new { success = false, message = "Email already exists." });
+
+        try
+        {
+            var user = _authService.RegisterCharity(charityName, email, dto.Password,
+                phone, _otpService);
+
+            if (user == null)
+                return BadRequest(new { success = false, message = "Registration failed. Check database fields and verification." });
+
+            return Ok(new { success = true, message = "Charity registered successfully", userId = user.UserId });
+        }
+        catch (SqlException ex)
+        {
+            return StatusCode(503, new { success = false, message = "SQL Server connection failed.", details = ex.Message, errorNumber = ex.Number });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(503, new { success = false, message = "Database connection failed. Check SQL Server and connection string." , details = ex.Message });
+        }
     }
 }

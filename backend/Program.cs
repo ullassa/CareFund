@@ -9,8 +9,16 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
-var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
-if (File.Exists(envPath))
+var envCandidates = new[]
+{
+    Path.Combine(Directory.GetCurrentDirectory(), ".env"),
+    Path.Combine(AppContext.BaseDirectory, ".env"),
+    Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".env")),
+    Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".env"))
+};
+
+var envPath = envCandidates.FirstOrDefault(File.Exists);
+if (!string.IsNullOrWhiteSpace(envPath))
 {
     Env.Load(envPath);
 }
@@ -59,8 +67,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // DB Context
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("DefaultConnection is missing. Check backend/.env or appsettings.json.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // CORS
 builder.Services.AddCors(options =>

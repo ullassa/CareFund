@@ -88,7 +88,10 @@ namespace CareFund.Services.Auth
                 Email = email,
                 PasswordHash = password,
                 PhoneNumber = phoneNumber,
-                UserRole = UserRole.CharityManager
+                UserRole = UserRole.CharityManager,
+                IsEmailVerified = true,
+                IsPhoneVerified = true,
+                IsActive = true
             };
 
             _context.Users.Add(user);
@@ -100,7 +103,16 @@ namespace CareFund.Services.Auth
             var charity = new Charity
             {
                 UserId = user.UserId,
-                CharityName = charityName
+                CharityName = charityName,
+                RegistrationId = $"CF-{DateTime.UtcNow:yyyyMMddHHmmss}-{user.UserId}",
+                Description = string.Empty,
+                Cause = string.Empty,
+                Location = string.Empty,
+                PhoneNumber = phoneNumber,
+                Email = email,
+                CharityStatus = CharityStatus.Pending,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
             };
 
             _context.Charities.Add(charity);
