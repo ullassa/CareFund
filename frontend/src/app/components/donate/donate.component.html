@@ -1,31 +1,88 @@
 <app-header></app-header>
 
-<div class="donate-page">
+<main class="donate-page">
   <div class="donate-container">
-    <!-- Select Cause -->
-    <section class="cause-section">
-      <h1>Select a Cause</h1>
-      <div class="causes-grid">
-        <div
-          class="cause-option"
-          *ngFor="let cause of causes"
-          [class.active]="selectedCauseId === cause.id"
-          (click)="selectCause(cause.id)"
+    <section class="charity-list-section">
+      <h1>Available Charities</h1>
+      <p class="section-subtitle">Choose one charity to view all details and continue.</p>
+
+      <div *ngIf="charityLoading" class="empty-state">Loading charities...</div>
+      <div *ngIf="!charityLoading && charityError" class="message error">{{ charityError }}</div>
+
+      <div class="charity-list" *ngIf="!charityLoading && charities.length > 0">
+        <article
+          class="charity-list-item"
+          *ngFor="let charity of charities"
+          [class.active]="selectedCharity?.id === charity.id"
+          (click)="openCharityDetails(charity)"
         >
-          <div class="cause-image">{{ cause.image }}</div>
-          <h3>{{ cause.name }}</h3>
-          <p>{{ cause.description }}</p>
+          <div>
+            <h3>{{ charity.name }}</h3>
+            <p>{{ charity.cause || 'Community support' }} • {{ charity.location || 'Location not set' }}</p>
+          </div>
+          <button type="button" class="view-btn">View Charity</button>
+        </article>
+      </div>
+
+      <div *ngIf="!charityLoading && !charityError && charities.length === 0 && !selectedCharity" class="empty-state">
+        No charities are available right now.
+      </div>
+    </section>
+
+    <section class="charity-hero" *ngIf="selectedCharity">
+      <div class="hero-copy">
+        <span class="eyebrow">Charity details</span>
+        <h2>{{ selectedCharity.name }}</h2>
+        <p>{{ selectedCharity.description || 'This charity is ready to receive your support.' }}</p>
+
+        <div class="meta-grid">
+          <div>
+            <span class="meta-label">Cause</span>
+            <strong>{{ selectedCharity.cause || 'Community support' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">Location</span>
+            <strong>{{ selectedCharity.location || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">Email</span>
+            <strong>{{ selectedCharity.email || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span class="meta-label">Phone</span>
+            <strong>{{ selectedCharity.phoneNumber || 'Not set' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-badge">
+        <div class="hero-badge-inner">
+          <span>Safe giving</span>
+          <strong>Secure and simple checkout</strong>
         </div>
       </div>
     </section>
 
-    <!-- Select Amount -->
-    <section class="amount-section" *ngIf="selectedCauseId">
-      <h2>Select Donation Amount</h2>
-      <p class="section-subtitle">Choose from preset amounts or enter a custom amount</p>
+    <section class="gallery-section" *ngIf="selectedCharity && selectedCharityImages.length > 0">
+      <div class="section-head">
+        <h2>Charity gallery</h2>
+        <p>Swipe through a few images before you donate.</p>
+      </div>
+
+      <div class="gallery-scroll">
+        <article class="gallery-card" *ngFor="let image of selectedCharityImages">
+          <img [src]="image" [alt]="selectedCharity.name || 'Charity image'">
+        </article>
+      </div>
+    </section>
+
+    <section class="amount-section" *ngIf="selectedCharity">
+      <h2>Choose donation amount</h2>
+      <p class="section-subtitle">Select a preset amount or type your own.</p>
 
       <div class="amount-grid">
         <button
+          type="button"
           class="amount-btn"
           *ngFor="let amount of predefinedAmounts"
           [class.active]="selectedAmount === amount"
@@ -36,7 +93,7 @@
       </div>
 
       <div class="custom-amount">
-        <label for="customAmount">Or enter a custom amount:</label>
+        <label for="customAmount">Custom amount</label>
         <div class="input-wrapper">
           <span class="currency">$</span>
           <input
@@ -49,47 +106,99 @@
           >
         </div>
       </div>
+
+      <div class="buttons">
+        <button class="btn btn-primary" (click)="startDonation()">Donate Now</button>
+      </div>
     </section>
 
-    <!-- Donation Summary -->
-    <section class="summary-section" *ngIf="selectedCauseId && selectedAmount > 0">
-      <h2>Donation Summary</h2>
+    <section class="payment-section" *ngIf="showPaymentSection">
+      <div class="section-head">
+        <div>
+          <h2>Payment options</h2>
+          <p>Choose a payment option and complete your donation.</p>
+        </div>
+      </div>
+
+      <div class="payment-methods">
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'upi'" (click)="selectPaymentMethod('upi')">UPI</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'card'" (click)="selectPaymentMethod('card')">Card</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'netbanking'" (click)="selectPaymentMethod('netbanking')">Net Banking</button>
+        <button type="button" class="payment-chip" [class.active]="paymentMethod === 'wallet'" (click)="selectPaymentMethod('wallet')">Wallet</button>
+      </div>
+
+      <div class="payment-form card-shell" *ngIf="paymentMethod === 'upi'">
+        <label>UPI ID</label>
+        <input [(ngModel)]="upiId" type="text" placeholder="name@upi">
+      </div>
+
+      <div class="payment-form card-shell" *ngIf="paymentMethod === 'card'">
+        <label>Card holder name</label>
+        <input [(ngModel)]="cardHolderName" type="text" placeholder="Name on card">
+
+        <label>Card number</label>
+        <input [(ngModel)]="cardNumber" type="text" placeholder="1234 5678 9012 3456">
+
+        <div class="grid-2">
+          <div>
+            <label>Expiry</label>
+            <input [(ngModel)]="cardExpiry" type="text" placeholder="MM/YY">
+          </div>
+          <div>
+            <label>CVV</label>
+            <input [(ngModel)]="cardCvv" type="password" placeholder="***">
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-form card-shell" *ngIf="paymentMethod === 'netbanking'">
+        <label>Select bank</label>
+        <select [(ngModel)]="bankName">
+          <option value="">Choose your bank</option>
+          <option value="SBI">State Bank of India</option>
+          <option value="HDFC">HDFC Bank</option>
+          <option value="ICICI">ICICI Bank</option>
+          <option value="Axis">Axis Bank</option>
+        </select>
+      </div>
+
+      <div class="payment-form card-shell" *ngIf="paymentMethod === 'wallet'">
+        <label>Wallet phone number</label>
+        <input [(ngModel)]="walletNumber" type="text" placeholder="Mobile number">
+      </div>
+
       <div class="summary-card">
         <div class="summary-row">
-          <span class="label">Cause:</span>
-          <span class="value">{{ getSelectedCauseName() }}</span>
+          <span class="label">Charity</span>
+          <span class="value">{{ selectedCharity?.name }}</span>
         </div>
         <div class="summary-row">
-          <span class="label">Amount:</span>
-          <span class="value amount">${{ selectedAmount }}</span>
+          <span class="label">Donation</span>
+          <span class="value">${{ selectedAmount || 0 }}</span>
         </div>
         <div class="summary-row">
-          <span class="label">Platform Fee (2%):</span>
-          <span class="value">{{ (selectedAmount * 0.02).toFixed(2) }}</span>
+          <span class="label">Platform fee</span>
+          <span class="value">${{ ((selectedAmount || 0) * 0.02).toFixed(2) }}</span>
         </div>
         <div class="divider"></div>
         <div class="summary-row total">
-          <span class="label">Total:</span>
-          <span class="value">${{ (selectedAmount * 1.02).toFixed(2) }}</span>
+          <span class="label">Total</span>
+          <span class="value">${{ ((selectedAmount || 0) * 1.02).toFixed(2) }}</span>
         </div>
-        <p class="fee-note">The platform fee helps maintain our operations and security.</p>
+      </div>
+
+      <div *ngIf="paymentMessage" class="message error">
+        {{ paymentMessage }}
       </div>
 
       <div class="buttons">
-        <button class="btn btn-primary" (click)="proceedToDonate()">
-          Proceed to Payment
+        <button class="btn btn-primary" (click)="proceedToDonate()" [disabled]="paymentProcessing">
+          {{ paymentProcessing ? 'Processing...' : 'Pay now' }}
         </button>
-        <button class="btn btn-secondary" routerLink="/">
-          Cancel
-        </button>
+        <button class="btn btn-secondary" routerLink="/">Cancel</button>
       </div>
     </section>
-
-    <!-- Empty State -->
-    <section class="empty-state" *ngIf="!selectedCauseId || selectedAmount === 0">
-      <p>👆 Choose a cause and amount to continue</p>
-    </section>
   </div>
-</div>
+</main>
 
 <app-footer></app-footer>

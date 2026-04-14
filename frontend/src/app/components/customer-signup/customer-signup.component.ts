@@ -22,6 +22,7 @@ export class CustomerSignupComponent implements OnInit {
   isLoading = false;
   submitted = false;
   errorMessage = '';
+  successMessage = '';
 
   // OTP Variables
   emailOtpSent = false;
@@ -284,16 +285,38 @@ export class CustomerSignupComponent implements OnInit {
   onSubmit(): void {
     this.submitted = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     if (this.signupForm.valid && this.emailOtpVerified && this.phoneOtpVerified) {
       this.isLoading = true;
-      // Call registration API here
-      console.log('Registration form:', this.signupForm.value);
-      
-      setTimeout(() => {
-        this.isLoading = false;
-        console.log('Registration successful');
-      }, 2000);
+
+      const payload = {
+        name: (this.signupForm.get('name')?.value ?? '').trim(),
+        email: this.normalizeEmail(this.signupForm.get('email')?.value ?? ''),
+        password: this.signupForm.get('password')?.value ?? '',
+        phoneNumber: this.normalizePhone(this.signupForm.get('phone')?.value ?? ''),
+        dob: this.signupForm.get('dob')?.value ?? '',
+        city: this.signupForm.get('city')?.value ?? '',
+        state: this.signupForm.get('state')?.value ?? '',
+        country: this.signupForm.get('country')?.value ?? ''
+      };
+
+      this.api.registerCustomer(payload).subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
+          if (response?.success) {
+            this.successMessage = response?.message || 'Account created successfully.';
+            setTimeout(() => window.location.href = '/login', 1500);
+            return;
+          }
+
+          this.errorMessage = response?.message || 'Registration failed. Please try again.';
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = this.getApiErrorMessage(error, 'Registration failed. Verify phone and email first.');
+        }
+      });
       return;
     }
 
@@ -302,7 +325,7 @@ export class CustomerSignupComponent implements OnInit {
       return;
     }
 
-    this.errorMessage = 'Please complete all required fields.';
+    this.errorMessage = 'Please complete all required fields and verify email and phone OTP.';
   }
 
   // Getter methods

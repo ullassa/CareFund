@@ -1,0 +1,35 @@
+<app-header></app-header>
+
+<main class="success-page">
+  <section class="success-card">
+    <div class="icon">✓</div>
+    <h1>Payment Successful</h1>
+    <p>Your donation has been completed successfully.</p>
+
+    <div class="details">
+      <div class="row">
+        <span>Charity</span>
+        <strong>{{ charityName }}</strong>
+      </div>
+      <div class="row">
+        <span>Amount</span>
+        <strong>${{ amount }}</strong>
+      </div>
+      <div class="row">
+        <span>Payment Method</span>
+        <strong>{{ paymentMethod }}</strong>
+      </div>
+      <div class="row">
+        <span>Reference</span>
+        <strong>{{ reference }}</strong>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a routerLink="/" class="btn btn-primary">Go to Home</a>
+      <a routerLink="/donate" class="btn btn-secondary">Donate Again</a>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

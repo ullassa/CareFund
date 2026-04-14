@@ -6,6 +6,7 @@ import { CharitySignupComponent } from './components/charity-signup/charity-sign
 import { ImpactComponent } from './components/impact/impact.component';
 import { BlogsComponent } from './components/blogs/blogs.component';
 import { DonateComponent } from './components/donate/donate.component';
+import { PaymentSuccessComponent } from './components/payment-success/payment-success.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -15,5 +16,6 @@ export const routes: Routes = [
   { path: 'impact', component: ImpactComponent },
   { path: 'blogs', component: BlogsComponent },
   { path: 'donate', component: DonateComponent },
+  { path: 'payment-success', component: PaymentSuccessComponent },
   { path: '**', redirectTo: '' }
 ];

@@ -1,30 +1,36 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent],
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.css']
 })
-export class LandingComponent {
-  causes = [
-    { id: 1, name: 'Medical', description: 'Help those in medical need', icon: '🏥' },
-    { id: 2, name: 'Education', description: 'Support education initiatives', icon: '📚' },
-    { id: 3, name: 'Food & Hunger', description: 'Fight hunger and malnutrition', icon: '🍽️' },
-    { id: 4, name: 'Disaster Relief', description: 'Emergency assistance', icon: '🆘' },
-    { id: 5, name: 'Environmental', description: 'Protect our environment', icon: '🌍' }
-  ];
+export class LandingComponent implements OnInit {
+  charities: any[] = [];
+  filteredCharities: any[] = [];
+  visibleCharities: any[] = [];
+  isLoading = false;
+  searchTerm = '';
+  isLoggedIn = false;
+  currentPage = 1;
+  pageSize = 6;
+
+  heroTitle = 'Make a Difference Today';
+  heroSubtitle = 'Connect with real charities, support meaningful causes, and track your impact in one place.';
 
   statistics = [
-    { label: 'Total Donations', value: '$2.5M+', icon: '💰' },
-    { label: 'Active Charities', value: '150+', icon: '🤝' },
-    { label: 'Lives Impacted', value: '50K+', icon: '❤️' },
-    { label: 'Donors', value: '10K+', icon: '👥' }
+    { label: 'Charities', value: '0', icon: '🤝' },
+    { label: 'Approved', value: '0', icon: '✅' },
+    { label: 'Pending', value: '0', icon: '⏳' },
+    { label: 'Active Users', value: '10K+', icon: '👥' }
   ];
 
   testimonials = [
@@ -44,4 +50,97 @@ export class LandingComponent {
       message: 'The support we received changed our lives. Thank you CareFund!'
     }
   ];
+
+  constructor(private api: ApiService) {}
+
+  ngOnInit(): void {
+    this.isLoggedIn = !!localStorage.getItem('token');
+    if (this.isLoggedIn) {
+      this.heroTitle = 'Welcome back to CareFund';
+      this.heroSubtitle = 'Browse live charities and donate with confidence.';
+    }
+    this.loadCharities();
+  }
+
+  loadCharities(): void {
+    this.isLoading = true;
+    this.api.getPublicCharities().subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+        const items = response?.items ?? [];
+        const approvedItems = items.filter((item: any) => item.status === 'Approved' && item.isActive !== false);
+        this.charities = approvedItems;
+        this.filteredCharities = approvedItems;
+        this.currentPage = 1;
+        this.updateVisibleCharities();
+        this.updateStatistics(items);
+      },
+      error: () => {
+        this.isLoading = false;
+        this.charities = [];
+        this.filteredCharities = [];
+        this.visibleCharities = [];
+      }
+    });
+  }
+
+  updateStatistics(items: any[]): void {
+    const approved = items.filter(item => item.status === 'Approved').length;
+    const pending = items.filter(item => item.status === 'Pending').length;
+    this.statistics = [
+      { label: 'Charities', value: String(items.filter(item => item.isActive !== false).length), icon: '🤝' },
+      { label: 'Approved', value: String(approved), icon: '✅' },
+      { label: 'Pending', value: String(pending), icon: '⏳' },
+      { label: 'Active Users', value: '10K+', icon: '👥' }
+    ];
+  }
+
+  onSearchChange(): void {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      this.filteredCharities = this.charities;
+      this.currentPage = 1;
+      this.updateVisibleCharities();
+      return;
+    }
+
+    this.filteredCharities = this.charities.filter(charity =>
+      [charity.charityName, charity.cause, charity.location, charity.description]
+        .filter(Boolean)
+        .some((value: string) => value.toLowerCase().includes(term))
+    );
+    this.currentPage = 1;
+    this.updateVisibleCharities();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredCharities.length / this.pageSize));
+  }
+
+  get hasNextPage(): boolean {
+    return this.currentPage < this.totalPages;
+  }
+
+  get hasPreviousPage(): boolean {
+    return this.currentPage > 1;
+  }
+
+  nextPage(): void {
+    if (this.hasNextPage) {
+      this.currentPage++;
+      this.updateVisibleCharities();
+    }
+  }
+
+  previousPage(): void {
+    if (this.hasPreviousPage) {
+      this.currentPage--;
+      this.updateVisibleCharities();
+    }
+  }
+
+  updateVisibleCharities(): void {
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.visibleCharities = this.filteredCharities.slice(start, start + this.pageSize);
+  }
 }
