@@ -1,4 +1,16 @@
 /* Global Styles */
+:root {
+  --cf-light-blue: #dbeafe;
+  --cf-light-green: #dcfce7;
+  --cf-orange: #fb923c;
+  --cf-pink: #f9a8d4;
+  --cf-pitch-black: #0b0f19;
+  --cf-navy: #1e3a8a;
+  --cf-wine-red: #7f1d3a;
+  --cf-text: #1f2937;
+  --cf-surface: #ffffff;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -14,8 +26,8 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 16px;
   line-height: 1.6;
-  color: #333;
-  background-color: #fff;
+  color: var(--cf-text);
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #f9fafb 100%);
 }
 
 a {
@@ -48,22 +60,22 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #667eea;
+  background: var(--cf-navy);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #5568d3;
+  background: #1d4ed8;
 }
 
 /* Selection */
 ::selection {
-  background-color: #667eea;
+  background-color: var(--cf-light-blue);
   color: white;
 }
 
 ::-moz-selection {
-  background-color: #667eea;
+  background-color: var(--cf-light-blue);
   color: white;
 }
 
@@ -77,6 +89,22 @@ html {
 /* Transitions */
 * {
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button, .btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+button:hover:not(:disabled), .btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--cf-navy);
+  outline-offset: 2px;
 }
 
 /* Print Styles */

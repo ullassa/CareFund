@@ -27,10 +27,13 @@ interface PublicCharity {
 })
 export class DonateComponent implements OnInit {
   charities: PublicCharity[] = [];
+  availableCauses: string[] = [];
   selectedCharity: PublicCharity | null = null;
   queryCharity: PublicCharity | null = null;
   charityLoading = false;
   charityError = '';
+  keyword = '';
+  cause = '';
 
   showPaymentSection = false;
   selectedAmount = 0;
@@ -39,6 +42,7 @@ export class DonateComponent implements OnInit {
   paymentMethod: 'upi' | 'card' | 'netbanking' | 'wallet' = 'upi';
   paymentProcessing = false;
   paymentMessage = '';
+  donateAnonymously = false;
 
   upiId = '';
   cardHolderName = '';
@@ -90,14 +94,16 @@ export class DonateComponent implements OnInit {
     this.charityLoading = true;
     this.charityError = '';
 
-    this.apiService.getPublicCharities().subscribe({
+    this.apiService.getPublicCharities(this.keyword || undefined, this.cause || undefined).subscribe({
       next: (response: any) => {
         this.charities = this.mapCharities(response);
+        this.availableCauses = Array.from(new Set(this.charities.map(c => c.cause).filter(Boolean)));
 
         if (this.charities.length === 0) {
           this.apiService.getPublicCharitiesFromAuth().subscribe({
             next: (fallbackResponse: any) => {
               this.charities = this.mapCharities(fallbackResponse);
+              this.availableCauses = Array.from(new Set(this.charities.map(c => c.cause).filter(Boolean)));
               this.applyInitialSelection();
               this.charityLoading = false;
             },
@@ -116,6 +122,7 @@ export class DonateComponent implements OnInit {
         this.apiService.getPublicCharitiesFromAuth().subscribe({
           next: (fallbackResponse: any) => {
             this.charities = this.mapCharities(fallbackResponse);
+            this.availableCauses = Array.from(new Set(this.charities.map(c => c.cause).filter(Boolean)));
             this.applyInitialSelection();
             this.charityLoading = false;
           },
@@ -132,6 +139,11 @@ export class DonateComponent implements OnInit {
         });
       }
     });
+  }
+
+  applyFilters(): void {
+    this.selectedCharity = null;
+    this.loadCharities();
   }
 
   private mapCharities(response: any): PublicCharity[] {
@@ -186,6 +198,12 @@ export class DonateComponent implements OnInit {
   }
 
   startDonation(): void {
+    if (!localStorage.getItem('token')) {
+      this.paymentMessage = 'Please login to continue with donation payment.';
+      this.router.navigate(['/login']);
+      return;
+    }
+
     if (!this.selectedCharity) {
       this.paymentMessage = 'Please select a charity first.';
       return;
@@ -212,6 +230,11 @@ export class DonateComponent implements OnInit {
 
   proceedToDonate(): void {
     this.paymentMessage = '';
+
+    if (!localStorage.getItem('token')) {
+      this.router.navigate(['/login']);
+      return;
+    }
 
     if (!this.selectedCharity) {
       this.paymentMessage = 'Please choose a charity first.';
@@ -246,17 +269,38 @@ export class DonateComponent implements OnInit {
     }
 
     this.paymentProcessing = true;
-    setTimeout(() => {
-      this.paymentProcessing = false;
-      const paymentReference = `CF-${Date.now()}`;
-      this.router.navigate(['/payment-success'], {
-        queryParams: {
-          charityName: this.selectedCharity?.name,
-          amount: this.selectedAmount,
-          paymentMethod: this.selectedPaymentLabel,
-          reference: paymentReference
-        }
-      });
-    }, 1400);
+
+    const paymentMethodMap: Record<string, number> = {
+      upi: 1,
+      card: 2,
+      netbanking: 3,
+      wallet: 1
+    };
+
+    const payload = {
+      charityRegistrationId: this.selectedCharity.id,
+      amount: this.selectedAmount,
+      isAnonymous: this.donateAnonymously,
+      paymentMethod: paymentMethodMap[this.paymentMethod] ?? 1,
+      transactionReference: `CF-${Date.now()}`
+    };
+
+    this.apiService.createDonation(payload).subscribe({
+      next: (response: any) => {
+        this.paymentProcessing = false;
+        this.router.navigate(['/payment-success'], {
+          queryParams: {
+            charityName: this.selectedCharity?.name,
+            amount: this.selectedAmount,
+            paymentMethod: this.selectedPaymentLabel,
+            reference: response?.paymentReference || payload.transactionReference
+          }
+        });
+      },
+      error: (error) => {
+        this.paymentProcessing = false;
+        this.paymentMessage = error?.error?.message || 'Payment failed. Please login as a customer and try again.';
+      }
+    });
   }
 }

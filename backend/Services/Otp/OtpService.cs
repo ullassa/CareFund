@@ -4,6 +4,10 @@ using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
+using CareFund.Data;
+using CareFund.Enums;
+using CareFund.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CareFund.Services.Otp
 {
@@ -16,6 +20,7 @@ namespace CareFund.Services.Otp
         private readonly IConfiguration _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<OtpService> _logger;
+        private readonly ApplicationDbContext _context;
 
         // In-memory storage for temporary OTP state
         // Key: "phone:+1234567890" or "email:user@example.com"
@@ -23,11 +28,12 @@ namespace CareFund.Services.Otp
         private static readonly ConcurrentDictionary<string, DateTime> VerifiedPhones = new();
         private static readonly ConcurrentDictionary<string, DateTime> VerifiedEmails = new();
 
-        public OtpService(IConfiguration config, IHttpClientFactory httpClientFactory, ILogger<OtpService> logger)
+        public OtpService(IConfiguration config, IHttpClientFactory httpClientFactory, ILogger<OtpService> logger, ApplicationDbContext context)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _context = context;
         }
 
         /// <summary>
@@ -95,6 +101,8 @@ namespace CareFund.Services.Otp
             var expiry = DateTime.Now.AddMinutes(5);
             PendingOtps[key] = (otp, expiry);
 
+            await PersistOtpForEmailAsync(email, otp, expiry);
+
             // Send via email
             var result = await SendEmailAsync(email, otp);
             if (!result.Success)
@@ -146,7 +154,7 @@ namespace CareFund.Services.Otp
 
             email = email.Trim().ToLowerInvariant();
             var key = EmailKey(email);
-            var isValid = VerifyOtpInternal(key, otp);
+            var isValid = VerifyOtpInternalWithDatabase(key, email, otp);
 
             if (isValid)
             {
@@ -515,6 +523,55 @@ namespace CareFund.Services.Otp
                 var details = string.IsNullOrWhiteSpace(inner) ? ex.Message : $"{ex.Message} | {inner}";
                 return (false, $"Email delivery failed: {details}");
             }
+        }
+
+        private async Task PersistOtpForEmailAsync(string email, string otp, DateTime expiry)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user == null)
+                    return;
+
+                var record = new CareFund.Models.Otp
+                {
+                    UserId = user.UserId,
+                    OtpCode = otp,
+                    OtpType = OtpType.ForgotPassword,
+                    ExpiryTime = expiry,
+                    CreatedAt = DateTime.UtcNow,
+                    IsUsed = false
+                };
+
+                _context.OTPs.Add(record);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Unable to persist OTP for {email}");
+            }
+        }
+
+        private bool VerifyOtpInternalWithDatabase(string key, string email, string otp)
+        {
+            if (VerifyOtpInternal(key, otp))
+                return true;
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null)
+                return false;
+
+            var record = _context.OTPs
+                .Where(x => x.UserId == user.UserId && x.OtpType == OtpType.ForgotPassword && !x.IsUsed)
+                .OrderByDescending(x => x.CreatedAt)
+                .FirstOrDefault();
+
+            if (record == null || record.ExpiryTime < DateTime.Now || record.OtpCode != otp)
+                return false;
+
+            record.IsUsed = true;
+            _context.SaveChanges();
+            return true;
         }
 
         private bool IsSmtpConfigured() =>

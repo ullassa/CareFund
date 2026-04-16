@@ -248,6 +248,26 @@ select.form-control {
   margin: 0;
 }
 
+.dynamic-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.dynamic-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.dynamic-btn {
+  min-width: 90px;
+}
+
+.add-more-btn {
+  margin-top: 0.6rem;
+}
+
 /* Approval Notice */
 .approval-notice {
   background-color: #e8f4f8;

@@ -1,0 +1,165 @@
+<app-header></app-header>
+
+<main class="dashboard-page">
+  <section class="dashboard-shell" *ngIf="!loading; else loadingView">
+    
+    <!-- Header Section -->
+    <header class="dash-header">
+      <div class="header-content">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p class="subtitle">Manage charity registrations and monitor platform metrics</p>
+        </div>
+        <div class="filter-section">
+          <label for="status-filter">Filter by Status:</label>
+          <select id="status-filter" [(ngModel)]="statusFilter" (change)="fetchRequests()" class="filter-select">
+            <option value="">📋 All Requests</option>
+            <option value="Pending">⏳ Pending Review</option>
+            <option value="Approved">✅ Approved</option>
+            <option value="Rejected">❌ Rejected</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <!-- Error Message -->
+    <p class="error-banner" *ngIf="error">⚠️ {{ error }}</p>
+
+    <!-- KPI Cards Section -->
+    <section class="kpi-section">
+      <h2 class="section-title">Platform Metrics</h2>
+      <div class="kpi-grid">
+        <div class="kpi-card pending-card">
+          <div class="kpi-icon">⏳</div>
+          <div class="kpi-content">
+            <p class="kpi-label">Pending Review</p>
+            <h3 class="kpi-value">{{ stats.pending }}</h3>
+            <p class="kpi-subtitle">Awaiting approval</p>
+          </div>
+        </div>
+
+        <div class="kpi-card approved-card">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-content">
+            <p class="kpi-label">Approved</p>
+            <h3 class="kpi-value">{{ stats.approved }}</h3>
+            <p class="kpi-subtitle">Active charities</p>
+          </div>
+        </div>
+
+        <div class="kpi-card rejected-card">
+          <div class="kpi-icon">❌</div>
+          <div class="kpi-content">
+            <p class="kpi-label">Rejected</p>
+            <h3 class="kpi-value">{{ stats.rejected }}</h3>
+            <p class="kpi-subtitle">Not approved</p>
+          </div>
+        </div>
+
+        <div class="kpi-card users-card">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-content">
+            <p class="kpi-label">Total Users</p>
+            <h3 class="kpi-value">{{ (stats.totalCustomers || 0) + (stats.totalCharities || 0) }}</h3>
+            <p class="kpi-subtitle">{{ stats.totalCustomers }} customers · {{ stats.totalCharities }} charities</p>
+          </div>
+        </div>
+
+        <div class="kpi-card donation-card">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-content">
+            <p class="kpi-label">Total Donations</p>
+            <h3 class="kpi-value">₹{{ (stats.totalDonation || 0) | number:'1.0-0' }}</h3>
+            <p class="kpi-subtitle">Platform revenue</p>
+          </div>
+        </div>
+
+        <div class="kpi-card ratio-card">
+          <div class="kpi-icon">📊</div>
+          <div class="kpi-content">
+            <p class="kpi-label">Approval Rate</p>
+            <h3 class="kpi-value">{{ approvalPercent }}%</h3>
+            <p class="kpi-subtitle">{{ totalReviewed }} of {{ totalReviewed }} reviewed</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Charity Requests Section -->
+    <section class="requests-section">
+      <h2 class="section-title">Charity Registration Requests</h2>
+      
+      <div class="requests-container" *ngIf="requests.length > 0; else noRequests">
+        <div class="request-card" *ngFor="let item of requests">
+          <div class="request-header">
+            <div class="request-title">
+              <h3>{{ item.charityName }}</h3>
+              <span class="status-badge" [ngClass]="'status-' + item.status.toLowerCase()">
+                {{ item.status }}
+              </span>
+            </div>
+            <div class="request-meta">
+              <span class="meta-item">📂 {{ item.cause }}</span>
+              <span class="meta-item">📍 {{ item.city }}</span>
+              <span class="meta-item">📧 {{ item.email }}</span>
+            </div>
+          </div>
+
+          <div class="request-details">
+            <p class="mission-text"><strong>Mission:</strong> {{ item.mission || 'Not provided' }}</p>
+            <p class="date-text">Submitted: {{ item.submittedAt | date:'mediumDate' }} at {{ item.submittedAt | date:'shortTime' }}</p>
+            <p class="date-text" *ngIf="item.reviewedAt">Reviewed: {{ item.reviewedAt | date:'mediumDate' }}</p>
+          </div>
+
+          <div class="request-actions">
+            <div class="comment-box">
+              <input 
+                type="text"
+                [(ngModel)]="commentDraft[item.charityRegistrationId]" 
+                placeholder="Add admin comment (optional)..."
+                class="comment-input"
+              />
+            </div>
+            <div class="action-buttons">
+              <button 
+                class="btn-approve" 
+                (click)="review(item.charityRegistrationId, 'approve')"
+                [disabled]="item.status === 'Approved'"
+              >
+                ✓ Approve
+              </button>
+              <button 
+                class="btn-reject" 
+                (click)="review(item.charityRegistrationId, 'reject')"
+                [disabled]="item.status === 'Rejected'"
+              >
+                ✕ Reject
+              </button>
+            </div>
+          </div>
+
+          <div class="request-footer" *ngIf="item.adminComment">
+            <p class="admin-comment"><strong>Admin Comment:</strong> {{ item.adminComment }}</p>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noRequests>
+        <div class="empty-state">
+          <p class="empty-icon">📭</p>
+          <p class="empty-text">No charity requests found</p>
+        </div>
+      </ng-template>
+    </section>
+
+  </section>
+
+  <ng-template #loadingView>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading dashboard...</p>
+    </div>
+  </ng-template>
+</main>
+
+<app-footer></app-footer>

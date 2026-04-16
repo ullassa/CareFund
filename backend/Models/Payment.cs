@@ -1,26 +1,65 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using CareFund.Enums;
+using System.ComponentModel.DataAnnotations; 
 
-   namespace CareFund.Models
-  {
-public class Payment
-{
-    [Key]
-    public int PaymentId { get; set; }
- 
-    [ForeignKey("Donation")]
-    public int DonationId { get; set; }
- 
-    public decimal Amount { get; set; }
- 
-    public string PaymentStatus { get; set; } = "Success";
- 
-    public PaymentMethod PaymentMethod { get; set; }
- 
-    public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
- 
-    // Navigation
-    public Donation? Donation { get; set; }
-}
-  }
+using CareFund.Enums; 
+
+  
+
+namespace CareFund.Models 
+
+{ 
+
+    public class Payment 
+
+    { 
+
+        [Key] 
+
+        public int PaymentId { get; set; } 
+
+  
+
+  
+
+         
+
+  
+
+        [Required] 
+
+        public PaymentMethod PaymentMethod { get; set; } 
+
+  
+
+  
+
+         
+
+  
+
+        [StringLength(200)] 
+
+        public string? TransactionReference { get; set; } 
+
+  
+
+  
+
+         
+
+  
+
+        public DateTime PaymentDate { get; set; } = DateTime.UtcNow; 
+
+  
+
+  
+
+        
+
+  
+
+        public Donation? Donation { get; set; } 
+
+    } 
+
+} 

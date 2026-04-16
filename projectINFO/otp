@@ -94,5 +94,3 @@ Sends POST to Brevo transactional email endpoint
 Payload includes sender, recipient, subject, OTP text
 Returns Email sent on success, else status-based failure message
 If you want, next I can explain this same file truly line-by-line in 5 small chunks (about 80-100 lines each) so it is even easier to learn.
-
-GPT-5.3-Codex • 0.9x

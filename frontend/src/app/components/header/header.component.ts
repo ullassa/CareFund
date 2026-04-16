@@ -12,6 +12,10 @@ import { RouterModule } from '@angular/router';
 export class HeaderComponent {
   donateCausesOpen = false;
 
+  get isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
   causes = [
     { id: 1, name: 'Medical' },
     { id: 2, name: 'Education' },
@@ -30,5 +34,10 @@ export class HeaderComponent {
 
   navigateToDonate(causeId: number): void {
     this.closeDonateCauses();
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    window.location.href = '/';
   }
 }

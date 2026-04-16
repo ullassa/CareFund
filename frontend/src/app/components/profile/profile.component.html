@@ -1,0 +1,91 @@
+<app-header></app-header>
+
+<main class="profile-page">
+  <section class="profile-card" *ngIf="!loading; else loadingView">
+    <div class="title-row">
+      <div>
+        <h1>Profile</h1>
+        <p>Edit your details here. DOB stays read-only.</p>
+      </div>
+      <span class="role-badge">{{ role || 'User' }}</span>
+    </div>
+
+    <p class="message success" *ngIf="message">{{ message }}</p>
+    <p class="message error" *ngIf="error">{{ error }}</p>
+
+    <div class="profile-grid">
+      <label>
+        Name
+        <input [(ngModel)]="profile.name" type="text" />
+      </label>
+
+      <label>
+        Email
+        <input [(ngModel)]="profile.email" type="email" />
+      </label>
+
+      <label>
+        Phone
+        <input [(ngModel)]="profile.phoneNumber" type="text" />
+      </label>
+
+      <label>
+        City / Address
+        <input [(ngModel)]="profile.city" type="text" placeholder="City" />
+      </label>
+    </div>
+
+    <section *ngIf="role === 'CharityManager'" class="charity-box">
+      <h2>Charity Details</h2>
+      <p class="note">Any change here will require admin approval again.</p>
+
+      <div class="profile-grid">
+        <label>
+          Address Line
+          <input [(ngModel)]="charityProfile.addressLine" type="text" />
+        </label>
+
+        <label>
+          Cause Type
+          <input [(ngModel)]="charityProfile.causeType" type="text" />
+        </label>
+
+        <label class="full">
+          Mission
+          <textarea [(ngModel)]="charityProfile.mission" rows="3"></textarea>
+        </label>
+
+        <label class="full">
+          About
+          <textarea [(ngModel)]="charityProfile.about" rows="3"></textarea>
+        </label>
+
+        <label class="full">
+          Activities
+          <textarea [(ngModel)]="charityProfile.activities" rows="3"></textarea>
+        </label>
+
+        <label class="full">
+          Social Media Link
+          <input [(ngModel)]="charityProfile.socialMediaLink" type="url" />
+        </label>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="btn primary" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Saving...' : 'Save Changes' }}
+      </button>
+      <a routerLink="/" class="btn secondary">Back Home</a>
+    </div>
+  </section>
+
+  <ng-template #loadingView>
+    <section class="profile-card loading">
+      <div class="spinner"></div>
+      <p>Loading profile...</p>
+    </section>
+  </ng-template>
+</main>
+
+<app-footer></app-footer>

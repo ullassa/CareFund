@@ -9,15 +9,17 @@ namespace CareFund.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+            
         }
  
         // Tables
         public DbSet<User> Users { get; set; }
-        public DbSet<Charity> Charities { get; set; }
+        public DbSet<CharityRegistrationRequest> Charities { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Donation> Donations { get; set; }
         public DbSet<Payment> Payments { get; set; }
-        public DbSet<OTP> OTPs { get; set; }
+        public DbSet<CharityImage> CharityImage { get; set; }
+        public DbSet<Otp> OTPs { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<OtpVerification> OtpVerifications { get; set; }
  
@@ -39,7 +41,7 @@ namespace CareFund.Data
  
             // User - Charity (1:M)
             modelBuilder.Entity<User>()
-                .HasMany(u => u.Charities)
+                .HasMany(u => u.CharityRegistrationRequests)
                 .WithOne(c => c.User)
                 .HasForeignKey(c => c.UserId);
  
@@ -50,20 +52,25 @@ namespace CareFund.Data
                 .HasForeignKey(d => d.CustomerId);
  
             // Charity - Donation (1:M)
-            modelBuilder.Entity<Charity>()
+            modelBuilder.Entity<CharityRegistrationRequest>()
                 .HasMany(c => c.Donations)
-                .WithOne(d => d.Charity)
-                .HasForeignKey(d => d.CharityId);
+                .WithOne(d => d.CharityRegistrationRequest)
+                .HasForeignKey(d => d.CharityRegistrationId);
  
-            // Donation - Payment (1:M)
+            // Donation - Payment (1:1)
             modelBuilder.Entity<Donation>()
-                .HasMany(d => d.Payments)
+                .HasOne(d => d.Payment)
                 .WithOne(p => p.Donation)
-                .HasForeignKey(p => p.DonationId);
+                .HasForeignKey<Donation>(d => d.PaymentId);
+
+            // Donation amount precision
+            modelBuilder.Entity<Donation>()
+                .Property(d => d.Amount)
+                .HasPrecision(18, 2);
  
             // User - OTP (1:M)
             modelBuilder.Entity<User>()
-                .HasMany(u => u.OTPs)
+                .HasMany(u => u.Otps)
                 .WithOne(o => o.User)
                 .HasForeignKey(o => o.UserId);
  

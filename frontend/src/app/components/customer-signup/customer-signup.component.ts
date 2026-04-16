@@ -33,6 +33,10 @@ export class CustomerSignupComponent implements OnInit {
   phoneOtpError = '';
   emailOtpInfo = '';
   phoneOtpInfo = '';
+  emailResendCooldown = 0;
+  phoneResendCooldown = 0;
+  private emailResendTimer: ReturnType<typeof setInterval> | null = null;
+  private phoneResendTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(private fb: FormBuilder, private api: ApiService) {}
 
@@ -107,6 +111,7 @@ export class CustomerSignupComponent implements OnInit {
       
       // Step 4: Personal Details
       dob: ['', [Validators.required]],
+      gender: ['', [Validators.required]],
       city: ['', [Validators.required]],
       state: ['', [Validators.required]],
       country: ['', [Validators.required]]
@@ -139,6 +144,7 @@ export class CustomerSignupComponent implements OnInit {
                this.passwordsMatch());
       case 4:
         return !!(this.signupForm.get('dob')?.valid &&
+               this.signupForm.get('gender')?.valid &&
                this.signupForm.get('city')?.valid &&
                this.signupForm.get('state')?.valid &&
                this.signupForm.get('country')?.valid);
@@ -160,7 +166,9 @@ export class CustomerSignupComponent implements OnInit {
           this.isLoading = false;
           if (response.success) {
             this.emailOtpSent = true;
+            this.emailOtpVerified = false;
             this.emailOtpInfo = response.message || 'OTP request accepted.';
+            this.startEmailCooldown();
             console.log('OTP sent to email:', email);
           } else {
             this.emailOtpError = response.message || 'Failed to send OTP';
@@ -217,7 +225,9 @@ export class CustomerSignupComponent implements OnInit {
           this.isLoading = false;
           if (response.success) {
             this.phoneOtpSent = true;
+            this.phoneOtpVerified = false;
             this.phoneOtpInfo = response.message || 'OTP request accepted.';
+            this.startPhoneCooldown();
             console.log('OTP sent to phone:', phone);
           } else {
             this.phoneOtpError = response.message || 'Failed to send OTP';
@@ -282,6 +292,36 @@ export class CustomerSignupComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  private startEmailCooldown(): void {
+    this.emailResendCooldown = 30;
+    if (this.emailResendTimer) {
+      clearInterval(this.emailResendTimer);
+    }
+
+    this.emailResendTimer = setInterval(() => {
+      this.emailResendCooldown = Math.max(0, this.emailResendCooldown - 1);
+      if (this.emailResendCooldown === 0 && this.emailResendTimer) {
+        clearInterval(this.emailResendTimer);
+        this.emailResendTimer = null;
+      }
+    }, 1000);
+  }
+
+  private startPhoneCooldown(): void {
+    this.phoneResendCooldown = 30;
+    if (this.phoneResendTimer) {
+      clearInterval(this.phoneResendTimer);
+    }
+
+    this.phoneResendTimer = setInterval(() => {
+      this.phoneResendCooldown = Math.max(0, this.phoneResendCooldown - 1);
+      if (this.phoneResendCooldown === 0 && this.phoneResendTimer) {
+        clearInterval(this.phoneResendTimer);
+        this.phoneResendTimer = null;
+      }
+    }, 1000);
+  }
+
   onSubmit(): void {
     this.submitted = true;
     this.errorMessage = '';
@@ -296,6 +336,7 @@ export class CustomerSignupComponent implements OnInit {
         password: this.signupForm.get('password')?.value ?? '',
         phoneNumber: this.normalizePhone(this.signupForm.get('phone')?.value ?? ''),
         dob: this.signupForm.get('dob')?.value ?? '',
+        gender: this.signupForm.get('gender')?.value ?? '',
         city: this.signupForm.get('city')?.value ?? '',
         state: this.signupForm.get('state')?.value ?? '',
         country: this.signupForm.get('country')?.value ?? ''
@@ -335,6 +376,7 @@ export class CustomerSignupComponent implements OnInit {
   get password() { return this.signupForm.get('password'); }
   get confirmPassword() { return this.signupForm.get('confirmPassword'); }
   get dob() { return this.signupForm.get('dob'); }
+  get gender() { return this.signupForm.get('gender'); }
   get city() { return this.signupForm.get('city'); }
   get state() { return this.signupForm.get('state'); }
   get country() { return this.signupForm.get('country'); }

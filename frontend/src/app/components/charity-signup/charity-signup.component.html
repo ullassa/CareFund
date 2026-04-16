@@ -78,9 +78,9 @@
                 type="button"
                 class="btn btn-secondary"
                 (click)="sendEmailOtp()"
-                [disabled]="!signupForm.get('email')?.valid || emailOtpSent || isLoading"
+                [disabled]="!signupForm.get('email')?.valid || emailResendCooldown > 0 || isLoading"
               >
-                {{ emailOtpSent ? 'OTP Sent' : 'Send OTP' }}
+                {{ emailResendCooldown > 0 ? ('Resend in ' + emailResendCooldown + 's') : (emailOtpSent ? 'Resend OTP' : 'Send OTP') }}
               </button>
             </div>
             <button
@@ -134,9 +134,9 @@
                 type="button"
                 class="btn btn-secondary"
                 (click)="sendPhoneOtp()"
-                [disabled]="!signupForm.get('phone')?.valid || phoneOtpSent || isLoading"
+                [disabled]="!signupForm.get('phone')?.valid || phoneResendCooldown > 0 || isLoading"
               >
-                {{ phoneOtpSent ? 'OTP Sent' : 'Send OTP' }}
+                {{ phoneResendCooldown > 0 ? ('Resend in ' + phoneResendCooldown + 's') : (phoneOtpSent ? 'Resend OTP' : 'Send OTP') }}
               </button>
             </div>
             <button
@@ -280,6 +280,11 @@
           <h2>Charity Registration Details</h2>
           <p class="step-subtitle">These details will be reviewed by our admin team for verification</p>
 
+          <div class="approval-notice">
+            <p><strong>Preview:</strong> Review your entries below before final submission. You can go back and edit anything that needs correction.</p>
+            <p class="preview-text">{{ previewSummary }}</p>
+          </div>
+
           <div class="form-group">
             <label for="charityRegistrationNumber">Registration Number </label>
             <input
@@ -348,18 +353,37 @@
           </div>
 
           <div class="form-group">
-            <label for="website">Website</label>
-            <input
-              type="url"
-              id="website"
-              formControlName="website"
-              placeholder="https://yourwebsite.com"
-              class="form-control"
-              [class.is-invalid]="submitted && signupForm.get('website')?.invalid"
-            >
-            <div *ngIf="submitted && signupForm.get('website')?.invalid" class="error-message">
-              <span *ngIf="signupForm.get('website')?.errors?.['pattern']">Please enter a valid URL</span>
+            <label>Websites</label>
+            <div class="dynamic-list">
+              <div class="dynamic-row" *ngFor="let website of websiteLinks; let i = index">
+                <input
+                  type="url"
+                  [(ngModel)]="websiteLinks[i]"
+                  [ngModelOptions]="{standalone: true}"
+                  placeholder="https://yourwebsite.com"
+                  class="form-control"
+                >
+                <button type="button" class="btn btn-outline dynamic-btn" (click)="removeWebsiteField(i)">Remove</button>
+              </div>
             </div>
+            <button type="button" class="btn btn-outline add-more-btn" (click)="addWebsiteField()">+ Add New Website</button>
+          </div>
+
+          <div class="form-group">
+            <label>Charity Image URLs</label>
+            <div class="dynamic-list">
+              <div class="dynamic-row" *ngFor="let imageUrl of charityImageUrls; let i = index">
+                <input
+                  type="url"
+                  [(ngModel)]="charityImageUrls[i]"
+                  [ngModelOptions]="{standalone: true}"
+                  placeholder="https://example.com/charity-image.jpg"
+                  class="form-control"
+                >
+                <button type="button" class="btn btn-outline dynamic-btn" (click)="removeImageField(i)">Remove</button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline add-more-btn" (click)="addImageField()">+ Add New Image</button>
           </div>
 
           <div class="form-group">
@@ -368,16 +392,14 @@
               <input
                 type="file"
                 id="taxExemptCertificate"
-                formControlName="taxExemptCertificate"
                 (change)="onFileSelected($event)"
                 class="form-control"
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                [class.is-invalid]="submitted && taxExemptCertificate?.invalid"
               >
               <p class="file-hint">Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</p>
-            </div>
-            <div *ngIf="submitted && taxExemptCertificate?.invalid" class="error-message">
-              <span *ngIf="taxExemptCertificate?.errors?.['required']">Certificate is required</span>
+              <p class="file-name" *ngIf="selectedTaxExemptCertificateName">
+                Selected file: {{ selectedTaxExemptCertificateName }}
+              </p>
             </div>
           </div>
 

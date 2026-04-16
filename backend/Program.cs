@@ -110,6 +110,54 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Seed default admin user
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.ExecuteSqlRaw(@"
+IF EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE name = 'IX_Users_PhoneNumber' AND object_id = OBJECT_ID('dbo.Users')
+)
+BEGIN
+    DROP INDEX [IX_Users_PhoneNumber] ON [dbo].[Users];
+END");
+
+        var adminExists = db.Users.Any(u => u.Email == "admin@carefund.com" && u.UserRole == CareFund.Enums.UserRole.Admin);
+
+        if (!adminExists)
+        {
+            var adminUser = new CareFund.Models.User
+            {
+                UserName = "Admin",
+                Email = "admin@carefund.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                UserRole = CareFund.Enums.UserRole.Admin,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            db.Users.Add(adminUser);
+            db.SaveChanges();
+        }
+        else
+        {
+            var existingAdmin = db.Users.First(u => u.Email == "admin@carefund.com" && u.UserRole == CareFund.Enums.UserRole.Admin);
+            if (string.IsNullOrWhiteSpace(existingAdmin.PasswordHash) || !existingAdmin.PasswordHash.StartsWith("$2"))
+            {
+                existingAdmin.PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123");
+                db.SaveChanges();
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Database unavailable during startup admin seeding. Check SQL Server instance and connection string.");
+    }
+}
+
 // Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
