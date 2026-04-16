@@ -18,21 +18,30 @@ namespace CareFund.Controllers
         }
 
         [HttpGet("public")]
-        public async Task<IActionResult> GetPublicCharities()
+        public async Task<IActionResult> GetPublicCharities([FromQuery] string? keyword = null, [FromQuery] string? cause = null)
         {
             var charities = await _context.Charities
                 .AsNoTracking()
-                .OrderByDescending(c => c.CreatedAt)
+                .Include(c => c.User)
+                .Where(c => c.Status == CharityStatus.Approved && c.IsActive)
+                .Where(c => c.User != null)
+                .Where(c => string.IsNullOrWhiteSpace(keyword)
+                    || (c.User != null && c.User.UserName.Contains(keyword))
+                    || (c.RegistrationId != null && c.RegistrationId.Contains(keyword))
+                    || c.City.Contains(keyword))
+                .Where(c => string.IsNullOrWhiteSpace(cause)
+                    || c.CauseType.ToString().Contains(cause))
+                .OrderByDescending(c => c.SubmittedAt)
                 .Select(c => new PublicCharityDto
                 {
-                    CharityId = c.CharityId,
-                    CharityName = c.CharityName,
-                    Description = c.Description,
-                    Cause = c.Cause,
-                    Location = c.Location,
-                    PhoneNumber = c.PhoneNumber,
-                    Email = c.Email,
-                    Status = c.CharityStatus.ToString(),
+                    CharityId = c.CharityRegistrationId,
+                    CharityName = c.User != null ? c.User.UserName : string.Empty,
+                    Description = c.About,
+                    Cause = c.CauseType.ToString(),
+                    Location = c.City,
+                    PhoneNumber = c.ManagerPhone,
+                    Email = c.User != null ? c.User.Email : string.Empty,
+                    Status = c.Status.ToString(),
                     IsActive = c.IsActive
                 })
                 .ToListAsync();

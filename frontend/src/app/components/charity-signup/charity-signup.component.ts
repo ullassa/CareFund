@@ -33,6 +33,15 @@ export class CharitySignupComponent implements OnInit {
   emailOtpInfo = '';
   phoneOtpInfo = '';
   successMessage = '';
+  previewAcknowledged = false;
+  emailResendCooldown = 0;
+  phoneResendCooldown = 0;
+  private emailResendTimer: ReturnType<typeof setInterval> | null = null;
+  private phoneResendTimer: ReturnType<typeof setInterval> | null = null;
+  selectedTaxExemptCertificateName = 'No file chosen';
+  selectedTaxExemptCertificateFile: File | null = null;
+  websiteLinks: string[] = [''];
+  charityImageUrls: string[] = [''];
 
   constructor(private fb: FormBuilder, private api: ApiService, private router: Router) {}
 
@@ -182,7 +191,9 @@ export class CharitySignupComponent implements OnInit {
           this.isLoading = false;
           if (response.success) {
             this.emailOtpSent = true;
+            this.emailOtpVerified = false;
             this.emailOtpInfo = response.message || 'OTP request accepted.';
+            this.startEmailCooldown();
             console.log('OTP sent to email:', email);
           } else {
             this.emailOtpError = response.message || 'Failed to send OTP';
@@ -237,7 +248,9 @@ export class CharitySignupComponent implements OnInit {
           this.isLoading = false;
           if (response.success) {
             this.phoneOtpSent = true;
+            this.phoneOtpVerified = false;
             this.phoneOtpInfo = response.message || 'OTP request accepted.';
+            this.startPhoneCooldown();
             console.log('OTP sent to phone:', phone);
           } else {
             this.phoneOtpError = response.message || 'Failed to send OTP';
@@ -295,13 +308,71 @@ export class CharitySignupComponent implements OnInit {
   }
 
   onFileSelected(event: any): void {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0] ?? null;
+    this.selectedTaxExemptCertificateFile = file;
+
     if (file) {
-      this.signupForm.patchValue({ taxExemptCertificate: file.name });
-      this.signupForm.get('taxExemptCertificate')?.markAsTouched();
-      this.signupForm.get('taxExemptCertificate')?.updateValueAndValidity();
+      this.selectedTaxExemptCertificateName = file.name;
       console.log('File selected:', file.name);
+    } else {
+      this.selectedTaxExemptCertificateName = 'No file chosen';
     }
+  }
+
+  addWebsiteField(): void {
+    this.websiteLinks.push('');
+  }
+
+  removeWebsiteField(index: number): void {
+    if (this.websiteLinks.length === 1) {
+      this.websiteLinks[0] = '';
+      return;
+    }
+
+    this.websiteLinks.splice(index, 1);
+  }
+
+  addImageField(): void {
+    this.charityImageUrls.push('');
+  }
+
+  removeImageField(index: number): void {
+    if (this.charityImageUrls.length === 1) {
+      this.charityImageUrls[0] = '';
+      return;
+    }
+
+    this.charityImageUrls.splice(index, 1);
+  }
+
+  private startEmailCooldown(): void {
+    this.emailResendCooldown = 30;
+    if (this.emailResendTimer) {
+      clearInterval(this.emailResendTimer);
+    }
+
+    this.emailResendTimer = setInterval(() => {
+      this.emailResendCooldown = Math.max(0, this.emailResendCooldown - 1);
+      if (this.emailResendCooldown === 0 && this.emailResendTimer) {
+        clearInterval(this.emailResendTimer);
+        this.emailResendTimer = null;
+      }
+    }, 1000);
+  }
+
+  private startPhoneCooldown(): void {
+    this.phoneResendCooldown = 30;
+    if (this.phoneResendTimer) {
+      clearInterval(this.phoneResendTimer);
+    }
+
+    this.phoneResendTimer = setInterval(() => {
+      this.phoneResendCooldown = Math.max(0, this.phoneResendCooldown - 1);
+      if (this.phoneResendCooldown === 0 && this.phoneResendTimer) {
+        clearInterval(this.phoneResendTimer);
+        this.phoneResendTimer = null;
+      }
+    }, 1000);
   }
 
   onSubmit(): void {
@@ -310,6 +381,25 @@ export class CharitySignupComponent implements OnInit {
     this.successMessage = '';
 
     if (this.canCreateAccount()) {
+      const summary = [
+        `Organization: ${this.signupForm.get('organizationName')?.value ?? ''}`,
+        `Email: ${this.normalizeEmail(this.signupForm.get('email')?.value ?? '')}`,
+        `Phone: ${this.normalizePhone(this.signupForm.get('phone')?.value ?? '')}`,
+        `City: ${this.signupForm.get('city')?.value ?? ''}`,
+        `Charity type: ${this.signupForm.get('charityType')?.value ?? ''}`,
+        `Focus areas: ${this.signupForm.get('focusAreas')?.value ?? ''}`
+      ].join('\n');
+
+      const previewConfirmed = window.confirm(`Please review your charity registration details:\n\n${summary}\n\nIf anything is wrong, cancel and edit the form.`);
+      if (!previewConfirmed) {
+        return;
+      }
+
+      const finalConfirmed = window.confirm('Confirm final submission? Your charity registration will be sent for admin approval.');
+      if (!finalConfirmed) {
+        return;
+      }
+
       this.isLoading = true;
 
       const email = this.normalizeEmail(this.signupForm.get('email')?.value ?? '');
@@ -321,7 +411,16 @@ export class CharitySignupComponent implements OnInit {
         charityName: charityName,
         email: email,
         password: this.signupForm.get('password')?.value ?? '',
-        phoneNumber: phone
+        phoneNumber: phone,
+        registrationId: this.signupForm.get('charityRegistrationNumber')?.value ?? '',
+        causeType: this.signupForm.get('charityType')?.value ?? '',
+        city: this.signupForm.get('city')?.value ?? '',
+        socialMediaLink: this.websiteLinks.find(link => !!(link || '').trim()) ?? this.signupForm.get('website')?.value ?? '',
+        websiteLinks: this.websiteLinks.map(link => (link || '').trim()).filter(link => link.length > 0),
+        imageUrls: this.charityImageUrls.map(link => (link || '').trim()).filter(link => link.length > 0),
+        mission: this.signupForm.get('focusAreas')?.value ?? '',
+        about: this.signupForm.get('description')?.value ?? '',
+        activities: this.signupForm.get('focusAreas')?.value ?? ''
       };
 
       this.api.registerCharity(payload).subscribe({
@@ -365,4 +464,18 @@ export class CharitySignupComponent implements OnInit {
   get focusAreas() { return this.signupForm.get('focusAreas'); }
   get description() { return this.signupForm.get('description'); }
   get taxExemptCertificate() { return this.signupForm.get('taxExemptCertificate'); }
+
+  get previewSummary(): string {
+    return [
+      `Organization: ${this.signupForm.get('organizationName')?.value ?? ''}`,
+      `Email: ${this.normalizeEmail(this.signupForm.get('email')?.value ?? '')}`,
+      `Phone: ${this.normalizePhone(this.signupForm.get('phone')?.value ?? '')}`,
+      `City: ${this.signupForm.get('city')?.value ?? ''}`,
+      `State: ${this.signupForm.get('state')?.value ?? ''}`,
+      `Country: ${this.signupForm.get('country')?.value ?? ''}`,
+      `Charity type: ${this.signupForm.get('charityType')?.value ?? ''}`,
+      `Focus areas: ${this.signupForm.get('focusAreas')?.value ?? ''}`,
+      `Registration number: ${this.signupForm.get('charityRegistrationNumber')?.value ?? ''}`
+    ].join(' • ');
+  }
 }

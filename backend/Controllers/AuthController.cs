@@ -32,13 +32,22 @@ public class AuthController : ControllerBase
     {
         try
         {
-            var user = _authService.AuthenticateUser(loginUser.Email, loginUser.PasswordHash);
+            var email = loginUser.Email?.Trim().ToLowerInvariant() ?? string.Empty;
+            var user = _authService.AuthenticateUser(email, loginUser.PasswordHash);
 
             if (user == null)
                 return Unauthorized(new { success = false, message = "Invalid credentials" });
 
             var token = _jwtService.GenerateToken(user);
-            return Ok(new { success = true, token = token, message = "Login successful" });
+            return Ok(new
+            {
+                success = true,
+                token,
+                role = user.UserRole.ToString(),
+                userId = user.UserId,
+                userName = user.UserName,
+                message = "Login successful"
+            });
         }
         catch (SqlException ex)
         {
@@ -138,13 +147,77 @@ public class AuthController : ControllerBase
 
         try
         {
+            var parsedCause = CauseType.GeneralCharity;
+            if (!string.IsNullOrWhiteSpace(dto.CauseType) &&
+                Enum.TryParse<CauseType>(dto.CauseType, true, out var cause))
+            {
+                parsedCause = cause;
+            }
+
+            var websiteLinks = (dto.WebsiteLinks ?? new List<string>())
+                .Where(link => !string.IsNullOrWhiteSpace(link))
+                .Select(link => link.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (!string.IsNullOrWhiteSpace(dto.SocialMediaLink))
+            {
+                websiteLinks.Insert(0, dto.SocialMediaLink.Trim());
+                websiteLinks = websiteLinks.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            }
+
             var user = _authService.RegisterCharity(charityName, email, dto.Password,
-                phone, _otpService);
+                phone, _otpService,
+                dto.RegistrationId,
+                parsedCause,
+                dto.City,
+                websiteLinks.Count > 0 ? string.Join(", ", websiteLinks) : null,
+                dto.Mission,
+                dto.About,
+                dto.Activities);
 
             if (user == null)
                 return BadRequest(new { success = false, message = "Registration failed. Check database fields and verification." });
 
+            var imageUrls = (dto.ImageUrls ?? new List<string>())
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => url.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(10)
+                .ToList();
+
+            if (imageUrls.Count > 0)
+            {
+                var charity = _context.Charities.FirstOrDefault(c => c.UserId == user.UserId);
+                if (charity != null)
+                {
+                    foreach (var imageUrl in imageUrls)
+                    {
+                        _context.CharityImage.Add(new CharityImage
+                        {
+                            CharityRegistrationId = charity.CharityRegistrationId,
+                            ImageUrl = imageUrl,
+                    
+                         
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+
+            _context.Notifications.Add(new Notification
+            {
+                UserId = user.UserId,
+                NotificationType = NotificationType.Email,
+                Message = "Thank you for registering with CareFund. Your charity profile is pending admin approval."
+            });
+            _context.SaveChanges();
+
             return Ok(new { success = true, message = "Charity registered successfully", userId = user.UserId });
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+        {
+            return Conflict(new { success = false, message = "Phone number or email already exists.", details = ex.InnerException?.Message, errorNumber = ((SqlException)ex.InnerException).Number });
         }
         catch (SqlException ex)
         {
@@ -181,6 +254,9 @@ public class AuthController : ControllerBase
         if (_authService.EmailExists(email))
             return BadRequest(new { success = false, message = "Email already exists." });
 
+        // if (_authService.PhoneExists(phone))
+        //     return Conflict(new { success = false, message = "Phone number already exists. Please use a different phone number." });
+
         try
         {
             DateTime? dob = null;
@@ -189,12 +265,33 @@ public class AuthController : ControllerBase
                 dob = parsedDob;
             }
 
-            var user = _authService.RegisterCustomer(name, email, dto.Password, phone, dob, dto.City, _otpService);
+            var normalizedGender = (dto.Gender ?? string.Empty).Trim();
+            var allowedGenders = new[] { "Male", "Female", "Prefer not to say" };
+            if (string.IsNullOrWhiteSpace(normalizedGender) || !allowedGenders.Any(g => string.Equals(g, normalizedGender, StringComparison.OrdinalIgnoreCase)))
+            {
+                return BadRequest(new { success = false, message = "Gender is required. Allowed values: Male, Female, Prefer not to say." });
+            }
+
+            normalizedGender = allowedGenders.First(g => string.Equals(g, normalizedGender, StringComparison.OrdinalIgnoreCase));
+
+            var user = _authService.RegisterCustomer(name, email, dto.Password, phone, dob, dto.City, normalizedGender, _otpService);
 
             if (user == null)
                 return BadRequest(new { success = false, message = "Registration failed. Check database fields and verification." });
 
+            _context.Notifications.Add(new Notification
+            {
+                UserId = user.UserId,
+                NotificationType = NotificationType.Email,
+                Message = "Thank you for registering with CareFund."
+            });
+            _context.SaveChanges();
+
             return Ok(new { success = true, message = "Customer registered successfully", userId = user.UserId });
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+        {
+            return Conflict(new { success = false, message = "Phone number or email already exists.", details = ex.InnerException?.Message, errorNumber = ((SqlException)ex.InnerException).Number });
         }
         catch (SqlException ex)
         {
@@ -207,49 +304,35 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("public-charities")]
-    public async Task<IActionResult> GetPublicCharities()
+    public async Task<IActionResult> GetPublicCharities([FromQuery] string? keyword = null, [FromQuery] string? cause = null)
     {
         try
         {
             var charities = await _context.Charities
                 .AsNoTracking()
-                .OrderByDescending(c => c.CreatedAt)
+                .Include(c => c.User)
+                .Where(c => c.IsActive && c.Status == CharityStatus.Approved)
+                .Where(c => c.User != null)
+                .Where(c => string.IsNullOrWhiteSpace(keyword)
+                    || (c.User != null && c.User.UserName.Contains(keyword))
+                    || (c.RegistrationId != null && c.RegistrationId.Contains(keyword))
+                    || c.City.Contains(keyword))
+                .Where(c => string.IsNullOrWhiteSpace(cause)
+                    || c.CauseType.ToString().Contains(cause))
+                .OrderByDescending(c => c.SubmittedAt)
                 .Select(c => new
                 {
-                    charityId = c.CharityId,
-                    charityName = c.CharityName,
-                    description = c.Description,
-                    cause = c.Cause,
-                    location = c.Location,
-                    phoneNumber = c.PhoneNumber,
-                    email = c.Email,
-                    status = c.CharityStatus.ToString(),
+                    charityId = c.CharityRegistrationId,
+                    charityName = c.User != null ? c.User.UserName : string.Empty,
+                    description = c.About,
+                    cause = c.CauseType.ToString(),
+                    location = c.City,
+                    phoneNumber = c.ManagerPhone,
+                    email = c.User != null ? c.User.Email : string.Empty,
+                    status = c.Status.ToString(),
                     isActive = c.IsActive
                 })
                 .ToListAsync();
-
-            if (charities.Count == 0)
-            {
-                var fallbackFromUsers = await _context.Users
-                    .AsNoTracking()
-                    .Where(u => u.UserRole == UserRole.CharityManager && u.IsActive)
-                    .OrderByDescending(u => u.CreatedAt)
-                    .Select(u => new
-                    {
-                        charityId = u.UserId,
-                        charityName = u.UserName,
-                        description = "Registered charity on CareFund.",
-                        cause = "Community support",
-                        location = "Not set",
-                        phoneNumber = u.PhoneNumber,
-                        email = u.Email,
-                        status = "Approved",
-                        isActive = u.IsActive
-                    })
-                    .ToListAsync();
-
-                return Ok(new { success = true, items = fallbackFromUsers });
-            }
 
             return Ok(new { success = true, items = charities });
         }
@@ -262,4 +345,75 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { success = false, message = "Failed to fetch charities.", details = ex.Message });
         }
     }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Email))
+            return BadRequest(new { success = false, message = "Email is required." });
+
+        var email = request.Email.Trim().ToLowerInvariant();
+        var existing = _authService.GetUserByEmail(email);
+        if (existing == null)
+            return Ok(new { success = true, message = "If this email is registered, an OTP has been sent." });
+
+        var (success, message) = await _otpService.SendEmailOtpAsync(email);
+        if (!success)
+            return BadRequest(new { success = false, message });
+
+        return Ok(new { success = true, message = "Password reset OTP sent to your email." });
+    }
+
+    [HttpPost("reset-password")]
+    public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Otp) || string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return BadRequest(new { success = false, message = "Email, OTP and new password are required." });
+        }
+
+        var email = request.Email.Trim().ToLowerInvariant();
+        var isOtpValid = _otpService.VerifyEmailOtp(email, request.Otp);
+        if (!isOtpValid)
+            return BadRequest(new { success = false, message = "Invalid or expired OTP." });
+
+        var updated = _authService.UpdatePassword(email, request.NewPassword);
+        if (!updated)
+            return NotFound(new { success = false, message = "User not found." });
+
+        return Ok(new { success = true, message = "Password reset successful." });
+    }
+
+    [HttpPost("verify-forgot-password-otp")]
+    public IActionResult VerifyForgotPasswordOtp([FromBody] VerifyForgotPasswordOtpRequest request)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Otp))
+            return BadRequest(new { success = false, message = "Email and OTP are required." });
+
+        var email = request.Email.Trim().ToLowerInvariant();
+        var isOtpValid = _otpService.VerifyEmailOtp(email, request.Otp.Trim());
+        if (!isOtpValid)
+            return BadRequest(new { success = false, message = "Invalid or expired OTP." });
+
+        return Ok(new { success = true, message = "OTP verified successfully." });
+    }
+}
+
+public class ForgotPasswordRequest
+{
+    public string Email { get; set; } = string.Empty;
+}
+
+public class ResetPasswordRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Otp { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+}
+
+public class VerifyForgotPasswordOtpRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Otp { get; set; } = string.Empty;
 }

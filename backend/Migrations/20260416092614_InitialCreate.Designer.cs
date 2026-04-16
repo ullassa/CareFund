@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CareFund.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260410113706_InitialCreate")]
+    [Migration("20260416092614_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,55 +25,114 @@ namespace CareFund.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CareFund.Models.Charity", b =>
+            modelBuilder.Entity("CareFund.Models.CharityImage", b =>
                 {
-                    b.Property<int>("CharityId")
+                    b.Property<int>("ImageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CharityId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
 
-                    b.Property<string>("Cause")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CharityName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("CharityStatus")
+                    b.Property<int>("CharityRegistrationId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("ImageId");
+
+                    b.HasIndex("CharityRegistrationId");
+
+                    b.ToTable("CharityImage");
+                });
+
+            modelBuilder.Entity("CareFund.Models.CharityRegistrationRequest", b =>
+                {
+                    b.Property<int>("CharityRegistrationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CharityRegistrationId"));
+
+                    b.Property<string>("About")
+                        .IsRequired()
+                        .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Activities")
                         .IsRequired()
+                        .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AddressLine")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("AdminComment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("CauseType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("IndianState")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Location")
+                    b.Property<string>("ManagerName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("ManagerPhone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Mission")
+                        .IsRequired()
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pincode")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RegistrationId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SocialMediaLink")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("CharityId");
+                    b.HasKey("CharityRegistrationId");
 
                     b.HasIndex("UserId");
 
@@ -90,19 +149,21 @@ namespace CareFund.Migrations
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DOB")
+                    b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
-                    b.Property<bool>("IsAnonymous")
+                    b.Property<bool>("IsAnonymousDefault")
                         .HasColumnType("bit");
 
                     b.Property<int>("UserId")
@@ -125,13 +186,11 @@ namespace CareFund.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DonationId"));
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("CharityId")
+                    b.Property<int>("CharityRegistrationId")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
@@ -139,17 +198,20 @@ namespace CareFund.Migrations
                     b.Property<DateTime>("DonationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DonationStatus")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsAnonymous")
                         .HasColumnType("bit");
 
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
                     b.HasKey("DonationId");
 
-                    b.HasIndex("CharityId");
+                    b.HasIndex("CharityRegistrationId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("PaymentId")
+                        .IsUnique();
 
                     b.ToTable("Donations");
                 });
@@ -162,22 +224,19 @@ namespace CareFund.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
 
-                    b.Property<int>("DonationId")
+                    b.Property<int?>("DonationId")
                         .HasColumnType("int");
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("NotificationType")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("SentAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -191,7 +250,7 @@ namespace CareFund.Migrations
                     b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("CareFund.Models.OTP", b =>
+            modelBuilder.Entity("CareFund.Models.Otp", b =>
                 {
                     b.Property<int>("OtpId")
                         .ValueGeneratedOnAdd()
@@ -210,7 +269,8 @@ namespace CareFund.Migrations
 
                     b.Property<string>("OtpCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("OtpType")
                         .HasColumnType("int");
@@ -260,25 +320,17 @@ namespace CareFund.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("DonationId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("int");
 
-                    b.Property<string>("PaymentStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("TransactionReference")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("PaymentId");
-
-                    b.HasIndex("DonationId");
 
                     b.ToTable("Payments");
                 });
@@ -296,7 +348,8 @@ namespace CareFund.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -309,28 +362,47 @@ namespace CareFund.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("UserRole")
                         .HasColumnType("int");
 
                     b.HasKey("UserId");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CareFund.Models.Charity", b =>
+            modelBuilder.Entity("CareFund.Models.CharityImage", b =>
+                {
+                    b.HasOne("CareFund.Models.CharityRegistrationRequest", "CharityRegistrationRequest")
+                        .WithMany("Images")
+                        .HasForeignKey("CharityRegistrationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CharityRegistrationRequest");
+                });
+
+            modelBuilder.Entity("CareFund.Models.CharityRegistrationRequest", b =>
                 {
                     b.HasOne("CareFund.Models.User", "User")
-                        .WithMany("Charities")
+                        .WithMany("CharityRegistrationRequests")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -351,9 +423,9 @@ namespace CareFund.Migrations
 
             modelBuilder.Entity("CareFund.Models.Donation", b =>
                 {
-                    b.HasOne("CareFund.Models.Charity", "Charity")
+                    b.HasOne("CareFund.Models.CharityRegistrationRequest", "CharityRegistrationRequest")
                         .WithMany("Donations")
-                        .HasForeignKey("CharityId")
+                        .HasForeignKey("CharityRegistrationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -363,9 +435,17 @@ namespace CareFund.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Charity");
+                    b.HasOne("CareFund.Models.Payment", "Payment")
+                        .WithOne("Donation")
+                        .HasForeignKey("CareFund.Models.Donation", "PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CharityRegistrationRequest");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("CareFund.Models.Notification", b =>
@@ -373,8 +453,7 @@ namespace CareFund.Migrations
                     b.HasOne("CareFund.Models.Donation", "Donation")
                         .WithMany("Notifications")
                         .HasForeignKey("DonationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("CareFund.Models.User", "User")
                         .WithMany("Notifications")
@@ -387,10 +466,10 @@ namespace CareFund.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CareFund.Models.OTP", b =>
+            modelBuilder.Entity("CareFund.Models.Otp", b =>
                 {
                     b.HasOne("CareFund.Models.User", "User")
-                        .WithMany("OTPs")
+                        .WithMany("Otps")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -398,20 +477,11 @@ namespace CareFund.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("CareFund.Models.Payment", b =>
-                {
-                    b.HasOne("CareFund.Models.Donation", "Donation")
-                        .WithMany("Payments")
-                        .HasForeignKey("DonationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Donation");
-                });
-
-            modelBuilder.Entity("CareFund.Models.Charity", b =>
+            modelBuilder.Entity("CareFund.Models.CharityRegistrationRequest", b =>
                 {
                     b.Navigation("Donations");
+
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("CareFund.Models.Customer", b =>
@@ -422,20 +492,22 @@ namespace CareFund.Migrations
             modelBuilder.Entity("CareFund.Models.Donation", b =>
                 {
                     b.Navigation("Notifications");
+                });
 
-                    b.Navigation("Payments");
+            modelBuilder.Entity("CareFund.Models.Payment", b =>
+                {
+                    b.Navigation("Donation");
                 });
 
             modelBuilder.Entity("CareFund.Models.User", b =>
                 {
-                    b.Navigation("Charities");
+                    b.Navigation("CharityRegistrationRequests");
 
-                    b.Navigation("Customer")
-                        .IsRequired();
+                    b.Navigation("Customer");
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("OTPs");
+                    b.Navigation("Otps");
                 });
 #pragma warning restore 612, 618
         }

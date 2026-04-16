@@ -57,15 +57,113 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/auth/register-customer`, data);
   }
 
-  getPublicCharities() {
-    return this.http.get(`${this.baseUrl}/charities/public`).pipe(
+  createDonation(payload: any) {
+    return this.http.post(`${this.baseUrl}/donations`, payload);
+  }
+
+  getPublicCharities(keyword?: string, cause?: string) {
+    const params = new URLSearchParams();
+    if (keyword) params.set('keyword', keyword);
+    if (cause) params.set('cause', cause);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+
+    return this.http.get(`${this.baseUrl}/charities/public${suffix}`).pipe(
       catchError(() => this.http.get(`${this.baseUrl}/Charities/public`).pipe(
-        catchError(() => this.http.get(`${this.baseUrl}/auth/public-charities`))
+        catchError(() => this.http.get(`${this.baseUrl}/auth/public-charities${suffix}`))
       ))
     );
   }
 
   getPublicCharitiesFromAuth() {
     return this.http.get(`${this.baseUrl}/auth/public-charities`);
+  }
+
+  forgotPassword(email: string) {
+    return this.http.post(`${this.baseUrl}/auth/forgot-password`, { email });
+  }
+
+  verifyForgotPasswordOtp(email: string, otp: string) {
+    return this.http.post(`${this.baseUrl}/auth/verify-forgot-password-otp`, { email, otp });
+  }
+
+  resetPassword(payload: { email: string; otp: string; newPassword: string }) {
+    return this.http.post(`${this.baseUrl}/auth/reset-password`, payload);
+  }
+
+  getNotifications() {
+    return this.http.get(`${this.baseUrl}/notifications/mine`);
+  }
+
+  getCustomerDashboard(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get(`${this.baseUrl}/dashboard/customer${suffix}`);
+  }
+
+  getCharityDashboard(from?: string, to?: string) {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get(`${this.baseUrl}/dashboard/charity${suffix}`);
+  }
+
+  downloadCustomerReport(from?: string, to?: string, format: 'csv' | 'pdf' = 'csv') {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    params.set('format', format);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get(`${this.baseUrl}/dashboard/customer/report${suffix}`, { responseType: 'blob' });
+  }
+
+  downloadCharityReport(from?: string, to?: string, format: 'csv' | 'pdf' = 'csv') {
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    params.set('format', format);
+    const suffix = params.toString() ? `?${params.toString()}` : '';
+    return this.http.get(`${this.baseUrl}/dashboard/charity/report${suffix}`, { responseType: 'blob' });
+  }
+
+  getAdminDashboard() {
+    return this.http.get(`${this.baseUrl}/admin/dashboard`);
+  }
+
+  getAdminCharityRequests(status?: string) {
+    const suffix = status ? `?status=${encodeURIComponent(status)}` : '';
+    return this.http.get(`${this.baseUrl}/admin/charity-requests${suffix}`);
+  }
+
+  reviewCharityRequest(id: number, action: 'approve' | 'reject', adminComment?: string) {
+    return this.http.put(`${this.baseUrl}/admin/charity-requests/${id}/review`, {
+      action,
+      adminComment: adminComment ?? ''
+    });
+  }
+
+  getMyProfile() {
+    return this.http.get(`${this.baseUrl}/profile/me`);
+  }
+
+  updateCustomerProfile(payload: { name: string; email: string; phoneNumber: string; city?: string }) {
+    return this.http.put(`${this.baseUrl}/profile/customer`, payload);
+  }
+
+  updateCharityProfile(payload: {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    city?: string;
+    addressLine?: string;
+    mission?: string;
+    about?: string;
+    activities?: string;
+    socialMediaLink?: string;
+    causeType: string;
+  }) {
+    return this.http.put(`${this.baseUrl}/profile/charity`, payload);
   }
 }

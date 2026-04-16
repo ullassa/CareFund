@@ -30,7 +30,9 @@
 
     <!-- Auth Buttons -->
     <div class="auth-buttons">
-      <a routerLink="/login" class="btn btn-outline">Login</a>
+      <a *ngIf="!isLoggedIn" routerLink="/login" class="btn btn-outline">Login</a>
+      <a *ngIf="isLoggedIn" routerLink="/profile" class="btn btn-outline profile-btn">👤 Profile</a>
+      <button *ngIf="isLoggedIn" type="button" class="btn btn-outline" (click)="logout()">Logout</button>
     </div>
   </div>
 </header>

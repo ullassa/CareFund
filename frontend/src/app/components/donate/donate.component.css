@@ -31,6 +31,20 @@ section {
   margin-top: 1rem;
 }
 
+.filter-row {
+  display: grid;
+  grid-template-columns: 1fr 220px 120px;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.filter-row input,
+.filter-row select {
+  border: 1px solid #dbe3f0;
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+}
+
 .charity-list-item {
   display: flex;
   justify-content: space-between;
@@ -364,6 +378,15 @@ section {
   border: 1px solid #fecaca;
 }
 
+.anon-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  color: #334155;
+  font-weight: 600;
+}
+
 .selected-charity-banner {
   margin: 0.75rem 0 1rem;
   padding: 0.85rem 1rem;
@@ -408,6 +431,12 @@ section {
   }
 
   .meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .filter-row {
     grid-template-columns: 1fr;
   }
 }

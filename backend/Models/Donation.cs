@@ -1,36 +1,127 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using CareFund.Enums;
-  namespace CareFund.Models
-  {
+using System.ComponentModel.DataAnnotations; 
+
+using System.ComponentModel.DataAnnotations.Schema; 
 
   
-public class Donation
-{
-    [Key]
-    public int DonationId { get; set; }
+
+namespace CareFund.Models 
+
+{ 
+
+    public class Donation 
+
+    { 
+
+        [Key] 
+
+        public int DonationId { get; set; } 
+
+  
+
+  
+
+        
+
+  
+
+        [Required] 
+
+        public int CustomerId { get; set; } 
+
+  
+
+  
+
+         
+
+  
+
+        [Required] 
+
+        public int CharityRegistrationId { get; set; } 
+
+  
+
+  
+
+        
+
+  
+
+        [Required(ErrorMessage = "Donation amount is required")] 
+
+        [Range(1, 10000000, 
+
+            ErrorMessage = "Donation amount must be greater than 0")] 
+
+        public decimal Amount { get; set; } 
+
+  
+
+  
+
+        
+
+  
+
+        public DateTime DonationDate { get; set; } = DateTime.UtcNow; 
+
+  
+
+  
+
+       
+
+  
+
+        public bool IsAnonymous { get; set; } = false; 
+
+  
+
+  
+
+        
+
+  
+
+        [Required] 
+
+        public int PaymentId { get; set; } 
+
+  
+
+  
+
+        
+
+  
+
+        [ForeignKey("CustomerId")] 
+
+        public Customer? Customer { get; set; } 
+
+  
+
+  
+
+        [ForeignKey("CharityRegistrationId")] 
+
+        public CharityRegistrationRequest? CharityRegistrationRequest { get; set; } 
+
+  
+
+  
+
+        [ForeignKey("PaymentId")] 
+
+        public Payment? Payment { get; set; } 
+
  
-    [ForeignKey("Customer")]
-    public int CustomerId { get; set; }
+
  
-    [ForeignKey("Charity")]
-    public int CharityId { get; set; }
- 
-    public decimal Amount { get; set; }
- 
-    public DateTime DonationDate { get; set; } = DateTime.UtcNow;
- 
-    public bool IsAnonymous { get; set; }
- 
-    public DonationStatus DonationStatus { get; set; }
- 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
- 
-    // Navigation
-    public Customer? Customer { get; set; }
-    public Charity? Charity { get; set; }
-    //public Payment Payment { get; set; }
-    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
-public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+        public ICollection<Notification>? Notifications { get; set; } 
+
+    } 
+
 }
-  }

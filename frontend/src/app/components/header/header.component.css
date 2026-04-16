@@ -152,6 +152,12 @@
   color: white;
 }
 
+.profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header-container {

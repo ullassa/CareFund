@@ -79,9 +79,9 @@
                 type="button"
                 class="btn btn-secondary"
                 (click)="sendEmailOtp()"
-                [disabled]="!signupForm.get('email')?.valid || emailOtpSent || isLoading"
+                [disabled]="!signupForm.get('email')?.valid || emailResendCooldown > 0 || isLoading"
               >
-                {{ emailOtpSent ? 'OTP Sent' : 'Send OTP' }}
+                {{ emailResendCooldown > 0 ? ('Resend in ' + emailResendCooldown + 's') : (emailOtpSent ? 'Resend OTP' : 'Send OTP') }}
               </button>
             </div>
             <button
@@ -137,9 +137,9 @@
                 type="button"
                 class="btn btn-secondary"
                 (click)="sendPhoneOtp()"
-                [disabled]="!signupForm.get('phone')?.valid || phoneOtpSent || isLoading"
+                [disabled]="!signupForm.get('phone')?.valid || phoneResendCooldown > 0 || isLoading"
               >
-                {{ phoneOtpSent ? 'OTP Sent' : 'Send OTP' }}
+                {{ phoneResendCooldown > 0 ? ('Resend in ' + phoneResendCooldown + 's') : (phoneOtpSent ? 'Resend OTP' : 'Send OTP') }}
               </button>
             </div>
             <button
@@ -232,6 +232,24 @@
             >
             <div *ngIf="submitted && dob?.invalid" class="error-message">
               <span *ngIf="dob?.errors?.['required']">Date of birth is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="gender">Gender *</label>
+            <select
+              id="gender"
+              formControlName="gender"
+              class="form-control"
+              [class.is-invalid]="submitted && gender?.invalid"
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+            <div *ngIf="submitted && gender?.invalid" class="error-message">
+              <span *ngIf="gender?.errors?.['required']">Gender is required</span>
             </div>
           </div>
 

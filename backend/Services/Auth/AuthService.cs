@@ -28,17 +28,44 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(passwordHash))
                 return null;
 
-            var user = _context.Users.FirstOrDefault(u =>
-                u.Email == email &&
-                u.PasswordHash == passwordHash);
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var user = _context.Users.FirstOrDefault(u => u.Email == normalizedEmail);
 
-            if (user != null)
+            if (user == null)
+            {
+                _logger.LogWarning($"Authentication failed for: {email}");
+                return null;
+            }
+
+            var storedHash = user.PasswordHash ?? string.Empty;
+            var isValid = false;
+
+            try
+            {
+                isValid = storedHash.StartsWith("$2")
+                    ? BCrypt.Net.BCrypt.Verify(passwordHash, storedHash)
+                    : string.Equals(passwordHash, storedHash, StringComparison.Ordinal);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Password verification failed for: {email}");
+                isValid = false;
+            }
+
+            if (isValid && !storedHash.StartsWith("$2"))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordHash);
+                _context.SaveChanges();
+            }
+
+            if (isValid)
             {
                 _logger.LogInformation($"User authenticated: {email}");
             }
             else
             {
                 _logger.LogWarning($"Authentication failed for: {email}");
+                return null;
             }
 
             return user;
@@ -49,7 +76,14 @@ namespace CareFund.Services.Auth
         /// Requires verified phone and email
         /// </summary>
         public User? RegisterCharity(string charityName, string email, string password,
-            string phoneNumber, IOtpService otpService)
+            string phoneNumber, IOtpService otpService,
+            string? registrationId = null,
+            CauseType causeType = CauseType.GeneralCharity,
+            string? city = null,
+            string? socialMediaLink = null,
+            string? mission = null,
+            string? about = null,
+            string? activities = null)
         {
             // Validate inputs
             if (string.IsNullOrWhiteSpace(charityName) ||
@@ -85,8 +119,8 @@ namespace CareFund.Services.Auth
             var user = new User
             {
                 UserName = charityName,
-                Email = email,
-                PasswordHash = password,
+                Email = email.Trim().ToLowerInvariant(),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                 PhoneNumber = phoneNumber,
                 UserRole = UserRole.CharityManager,
                 IsEmailVerified = true,
@@ -99,26 +133,33 @@ namespace CareFund.Services.Auth
 
             _logger.LogInformation($"User created: {email}");
 
-            // Create charity
-            var charity = new Charity
+            // Create charity registration request (pending admin approval)
+            var charity = new CharityRegistrationRequest
             {
                 UserId = user.UserId,
-                CharityName = charityName,
-                RegistrationId = $"CF-{DateTime.UtcNow:yyyyMMddHHmmss}-{user.UserId}",
-                Description = string.Empty,
-                Cause = string.Empty,
-                Location = string.Empty,
-                PhoneNumber = phoneNumber,
-                Email = email,
-                CharityStatus = CharityStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
+                RegistrationId = string.IsNullOrWhiteSpace(registrationId)
+                    ? $"CF-{DateTime.UtcNow:yyyyMMddHHmmss}-{user.UserId}"
+                    : registrationId,
+                Mission = string.IsNullOrWhiteSpace(mission) ? "Mission details pending completion by charity organization." : mission,
+                About = string.IsNullOrWhiteSpace(about) ? "This organization has submitted details and awaits admin review." : about,
+                Activities = string.IsNullOrWhiteSpace(activities) ? "Activity information will be updated by the organization after onboarding." : activities,
+                CauseType = causeType,
+                AddressLine = "Address details pending",
+                City = string.IsNullOrWhiteSpace(city) ? "Unknown" : city,
+                IndianState = IndianState.TamilNadu,
+                Pincode = "600001",
+                ManagerName = charityName,
+                ManagerPhone = phoneNumber,
+                SocialMediaLink = string.IsNullOrWhiteSpace(socialMediaLink) ? "https://carefund.example/charity" : socialMediaLink,
+                Status = CharityStatus.Pending,
+                SubmittedAt = DateTime.UtcNow,
                 IsActive = true
             };
 
             _context.Charities.Add(charity);
             _context.SaveChanges();
 
-            _logger.LogInformation($"Charity created: {charityName} by {email}");
+            _logger.LogInformation($"Charity registration request created: {charityName} by {email}");
 
             // Clear verification flags
             otpService.ClearPhoneVerification(phoneNumber);
@@ -132,7 +173,7 @@ namespace CareFund.Services.Auth
         /// Requires verified phone and email
         /// </summary>
         public User? RegisterCustomer(string name, string email, string password,
-            string phoneNumber, DateTime? dob, string city, IOtpService otpService)
+            string phoneNumber, DateTime? dob, string city, string gender, IOtpService otpService)
         {
             if (string.IsNullOrWhiteSpace(name) ||
                 string.IsNullOrWhiteSpace(email) ||
@@ -161,11 +202,19 @@ namespace CareFund.Services.Auth
                 return null;
             }
 
+            var normalizedGender = (gender ?? string.Empty).Trim().ToLowerInvariant() switch
+            {
+                "male" => "Male",
+                "female" => "Female",
+                "prefer not to say" => "Prefer not to say",
+                _ => "Prefer not to say"
+            };
+
             var user = new User
             {
                 UserName = name,
-                Email = email,
-                PasswordHash = password,
+                Email = email.Trim().ToLowerInvariant(),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
                 PhoneNumber = phoneNumber,
                 UserRole = UserRole.Customer,
                 IsEmailVerified = true,
@@ -179,11 +228,11 @@ namespace CareFund.Services.Auth
             var customer = new Customer
             {
                 UserId = user.UserId,
-                DOB = dob ?? DateTime.UtcNow,
+                DateOfBirth = dob ?? DateTime.UtcNow,
                 City = string.IsNullOrWhiteSpace(city) ? "Unknown" : city,
-                Gender = "Not Specified",
+                Gender = normalizedGender,
                 CreatedAt = DateTime.UtcNow,
-                IsAnonymous = false
+                IsAnonymousDefault = false
             };
 
             _context.Customers.Add(customer);
@@ -204,7 +253,8 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(email))
                 return null;
 
-            return _context.Users.FirstOrDefault(u => u.Email == email);
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            return _context.Users.FirstOrDefault(u => u.Email == normalizedEmail);
         }
 
         /// <summary>
@@ -215,7 +265,35 @@ namespace CareFund.Services.Auth
             if (string.IsNullOrWhiteSpace(email))
                 return false;
 
-            return _context.Users.Any(u => u.Email == email);
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            return _context.Users.Any(u => u.Email == normalizedEmail);
+        }
+
+        /// <summary>
+        /// Checks if phone is already registered
+        /// </summary>
+        public bool PhoneExists(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return false;
+
+            var normalizedPhone = phoneNumber.Trim();
+            return _context.Users.Any(u => u.PhoneNumber == normalizedPhone);
+        }
+
+        public bool UpdatePassword(string email, string newPasswordHash)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(newPasswordHash))
+                return false;
+
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var user = _context.Users.FirstOrDefault(u => u.Email == normalizedEmail);
+            if (user == null)
+                return false;
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPasswordHash);
+            _context.SaveChanges();
+            return true;
         }
     }
 }

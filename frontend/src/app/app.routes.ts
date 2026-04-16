@@ -7,12 +7,22 @@ import { ImpactComponent } from './components/impact/impact.component';
 import { BlogsComponent } from './components/blogs/blogs.component';
 import { DonateComponent } from './components/donate/donate.component';
 import { PaymentSuccessComponent } from './components/payment-success/payment-success.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { CustomerDashboardComponent } from './components/customer-dashboard/customer-dashboard.component';
+import { CharityDashboardComponent } from './components/charity-dashboard/charity-dashboard.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'customer-signup', component: CustomerSignupComponent },
   { path: 'charity-signup', component: CharitySignupComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'dashboard/customer', component: CustomerDashboardComponent },
+  { path: 'dashboard/charity', component: CharityDashboardComponent },
+  { path: 'dashboard/admin', component: AdminDashboardComponent },
+  { path: 'profile', component: ProfileComponent },
   { path: 'impact', component: ImpactComponent },
   { path: 'blogs', component: BlogsComponent },
   { path: 'donate', component: DonateComponent },

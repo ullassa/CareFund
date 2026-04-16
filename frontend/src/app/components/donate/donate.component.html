@@ -6,6 +6,19 @@
       <h1>Available Charities</h1>
       <p class="section-subtitle">Choose one charity to view all details and continue.</p>
 
+      <div class="filter-row">
+        <input
+          type="text"
+          [(ngModel)]="keyword"
+          placeholder="Search by charity name or keyword"
+        />
+        <select [(ngModel)]="cause">
+          <option value="">All causes</option>
+          <option *ngFor="let item of availableCauses" [value]="item">{{ item }}</option>
+        </select>
+        <button type="button" class="view-btn" (click)="applyFilters()">Filter</button>
+      </div>
+
       <div *ngIf="charityLoading" class="empty-state">Loading charities...</div>
       <div *ngIf="!charityLoading && charityError" class="message error">{{ charityError }}</div>
 
@@ -186,6 +199,11 @@
           <span class="value">${{ ((selectedAmount || 0) * 1.02).toFixed(2) }}</span>
         </div>
       </div>
+
+      <label class="anon-option">
+        <input type="checkbox" [(ngModel)]="donateAnonymously">
+        Pay anonymously (hide my identity from charity view)
+      </label>
 
       <div *ngIf="paymentMessage" class="message error">
         {{ paymentMessage }}

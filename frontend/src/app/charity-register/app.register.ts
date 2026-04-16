@@ -7,8 +7,12 @@ import { ApiService } from '../services/api.service';
   selector: 'app-charity-register',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './app.register.html',
-  // styleUrls: ['./app.register.css']
+  template: `
+    <section style="padding:1rem; max-width:720px; margin:0 auto;">
+      <h2>Legacy Charity Register</h2>
+      <p>This screen is no longer used. Please use the main charity signup page.</p>
+    </section>
+  `
 })
 export class CharityRegisterComponent {
   phone = '';
@@ -17,6 +21,8 @@ export class CharityRegisterComponent {
   emailOtp = '';
   password = '';
   charityName = '';
+
+  
 
   phoneVerified = false;
   emailVerified = false;
