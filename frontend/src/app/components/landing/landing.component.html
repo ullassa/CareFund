@@ -21,7 +21,7 @@
 
         <div class="hero-actions">
           <button class="btn btn-primary" routerLink="/donate">Donate now</button>
-          <button class="btn btn-secondary" routerLink="/charity-signup">Start a charity</button>
+          <button class="btn btn-secondary" routerLink="/charity-signup" *ngIf="!isLoggedIn">Start a charity</button>
         </div>
 
         <div class="hero-highlights">
@@ -99,13 +99,23 @@
           </div>
 
           <p class="charity-desc">
-            {{ charity.description || 'This charity is listed on CareFund and ready to receive support.' }}
+            {{ isCharityExpanded(charity)
+              ? (charity.description || 'This charity is listed on CareFund and ready to receive support.')
+              : (getShortText(charity.description, 120) || 'This charity is listed on CareFund and ready to receive support.') }}
           </p>
 
-          <div class="charity-meta">
+          <div class="charity-meta" *ngIf="isCharityExpanded(charity)">
             <span>Location: {{ charity.location || 'Location not set' }}</span>
             <span>Email: {{ charity.email || 'Email not set' }}</span>
           </div>
+
+          <button
+            type="button"
+            class="read-more"
+            (click)="toggleCharityDetails(charity)"
+          >
+            {{ isCharityExpanded(charity) ? 'Read less' : 'Read more' }}
+          </button>
 
           <div class="charity-actions">
             <button
@@ -132,7 +142,7 @@
             >
               Donate now
             </button>
-            <button class="btn btn-secondary" routerLink="/login">Learn more</button>
+            <button class="btn btn-secondary" routerLink="/login" *ngIf="!isLoggedIn">Learn more</button>
           </div>
         </article>
       </div>

@@ -38,52 +38,51 @@ public class DashboardController : ControllerBase
         var normalizedGroupBy = (groupBy ?? "month").Trim().ToLowerInvariant();
         var start = from ?? DateTime.UtcNow.AddMonths(-6);
         var end = to ?? DateTime.UtcNow;
+            var pdfLines = new List<string>
+            {
+                "Thank you for donating",
 
-        var donations = await _context.Donations
-            .AsNoTracking()
-            .Where(d => d.CustomerId == user.Customer.CustomerId && d.DonationDate >= start && d.DonationDate <= end)
-            .OrderBy(d => d.DonationDate)
-            .ToListAsync();
+            var donations = await _context.Donations
+                .AsNoTracking()
+                .Where(d => d.CustomerId == user.Customer.CustomerId && d.DonationDate >= start && d.DonationDate <= end)
+                .OrderBy(d => d.DonationDate)
+                .ToListAsync();
 
-        var grouped = normalizedGroupBy switch
-        {
-            "day" => donations
-                .GroupBy(d => d.DonationDate.Date)
-                .OrderBy(g => g.Key)
-                .Select(g => new
-                {
-                    label = g.Key.ToString("yyyy-MM-dd"),
-                    amount = g.Sum(x => x.Amount)
-                }),
-            "week" => donations
-                .GroupBy(d => StartOfWeek(d.DonationDate))
-                .OrderBy(g => g.Key)
-                .Select(g => new
-                {
-                    label = $"{g.Key:yyyy-MM-dd}",
-                    amount = g.Sum(x => x.Amount)
-                }),
-            "year" => donations
-                .GroupBy(d => d.DonationDate.Year)
-                .OrderBy(g => g.Key)
-                .Select(g => new
-                {
-                    label = g.Key.ToString(),
-                    amount = g.Sum(x => x.Amount)
-                }),
-            _ => donations
-                .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
-                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-                .Select(g => new
-                {
-                    label = $"{g.Key.Year}-{g.Key.Month:00}",
-                    amount = g.Sum(x => x.Amount)
-                })
-        };
-
-        return Ok(new
-        {
-            success = true,
+            var grouped = normalizedGroupBy switch
+            {
+                "day" => donations
+                    .GroupBy(d => d.DonationDate.Date)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new
+                    {
+                        label = g.Key.ToString("yyyy-MM-dd"),
+                        amount = g.Sum(x => x.Amount)
+                    }),
+                "week" => donations
+                    .GroupBy(d => StartOfWeek(d.DonationDate))
+                    .OrderBy(g => g.Key)
+                    .Select(g => new
+                    {
+                        label = $"{g.Key:yyyy-MM-dd}",
+                        amount = g.Sum(x => x.Amount)
+                    }),
+                "year" => donations
+                    .GroupBy(d => d.DonationDate.Year)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new
+                    {
+                        label = g.Key.ToString(),
+                        amount = g.Sum(x => x.Amount)
+                    }),
+                _ => donations
+                    .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
+                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                    .Select(g => new
+                    {
+                        label = $"{g.Key.Year}-{g.Key.Month:00}",
+                        amount = g.Sum(x => x.Amount)
+                    })
+            };
             groupBy = normalizedGroupBy,
             period = new { from = start, to = end },
             items = grouped
@@ -267,15 +266,25 @@ public class DashboardController : ControllerBase
             var pdfLines = new List<string>
             {
                 "Thank you for donating",
+                "",
                 $"Donor Name: {user.UserName}",
                 $"Donor Email: {user.Email}",
                 $"Report Period: {start:yyyy-MM-dd} to {end:yyyy-MM-dd}",
-                ""
+                "",
+                "Donations",
+                "",
+                FormatCustomerTableHeader(),
+                new string('-', 72)
             };
 
             foreach (var row in rows)
             {
-                pdfLines.Add($"Donation #{row.DonationId} | Date: {row.DonationDate:yyyy-MM-dd} | Amount: {row.Amount} | Charity: {row.CharityName}");
+                pdfLines.Add(FormatCustomerDonationRow(
+                    row.DonationId,
+                    row.DonationDate,
+                    row.Amount,
+                    row.CharityName
+                ));
             }
 
             var pdf = BuildSimplePdf("CareFund Donation Acknowledgement", pdfLines);
@@ -344,15 +353,27 @@ public class DashboardController : ControllerBase
             var pdfLines = new List<string>
             {
                 "Thank you for donating",
+                "",
                 $"Charity Name: {user.UserName}",
                 $"Charity Email: {user.Email}",
                 $"Report Period: {start:yyyy-MM-dd} to {end:yyyy-MM-dd}",
-                ""
+                "",
+                "Donations",
+                "",
+                FormatTableHeader(),
+                new string('-', 72)
             };
 
             foreach (var row in rows)
             {
-                pdfLines.Add($"Donation #{row.DonationId} | Date: {row.DonationDate:yyyy-MM-dd} | Donor: {row.DonorName} | Email: {row.DonorEmail} | Amount: {row.Amount}");
+                pdfLines.Add(FormatDonationRow(
+                    row.DonationId,
+                    row.DonationDate,
+                    row.DonorName,
+                    row.DonorEmail,
+                    row.Amount,
+                    row.IsAnonymous
+                ));
             }
 
             var pdf = BuildSimplePdf("CareFund Charity Acknowledgement", pdfLines);
@@ -378,13 +399,24 @@ public class DashboardController : ControllerBase
     private static byte[] BuildSimplePdf(string title, IEnumerable<string> lines)
     {
         var safeTitle = PdfEscape(title);
-        var y = 780;
+        var y = 760;
         var content = new StringBuilder();
+        content.AppendLine("q");
+        content.AppendLine("0.10 0.45 0.85 rg");
+        content.AppendLine("0 742 612 50 re f");
+        content.AppendLine("Q");
+        content.AppendLine("q");
+        content.AppendLine("0.90 0.96 1.00 rg");
+        content.AppendLine("20 730 572 6 re f");
+        content.AppendLine("Q");
         content.AppendLine("BT");
-        content.AppendLine("/F1 14 Tf");
-        content.AppendLine($"40 {y} Td");
+        content.AppendLine("/F1 18 Tf");
+        content.AppendLine("1 1 1 rg");
+        content.AppendLine($"40 {y + 20} Td");
         content.AppendLine($"({safeTitle}) Tj");
-        content.AppendLine("/F1 10 Tf");
+        content.AppendLine("0 0 0 rg");
+        content.AppendLine("/F2 9 Tf");
+        content.AppendLine("1 0 0 1 40 690 Tm");
 
         foreach (var line in lines.Take(45))
         {
@@ -399,9 +431,10 @@ public class DashboardController : ControllerBase
         {
             "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
             "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
-            "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n",
+            "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\nendobj\n",
             "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n",
-            $"5 0 obj\n<< /Length {contentBytes.Length} >>\nstream\n{content}endstream\nendobj\n"
+            "5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n",
+            $"6 0 obj\n<< /Length {contentBytes.Length} >>\nstream\n{content}endstream\nendobj\n"
         };
 
         var pdf = new StringBuilder();
@@ -449,6 +482,52 @@ public class DashboardController : ControllerBase
         }
 
         return value;
+    }
+
+    private static string FormatTableHeader()
+    {
+        return "ID   Date        Donor                Email                     Amount   Anon";
+    }
+
+    private static string FormatCustomerTableHeader()
+    {
+        return "ID   Date        Amount        Charity";
+    }
+
+    private static string FormatDonationRow(int id, DateTime date, string donor, string email, decimal amount, bool isAnonymous)
+    {
+        return string.Join(" ", new[]
+        {
+            Pad(id.ToString(), 4),
+            Pad(date.ToString("yyyy-MM-dd"), 11),
+            Pad(Trim(donor, 20), 20),
+            Pad(Trim(email, 26), 26),
+            Pad(amount.ToString("0.00"), 9),
+            Pad(isAnonymous ? "Yes" : "No", 4)
+        });
+    }
+
+    private static string FormatCustomerDonationRow(int id, DateTime date, decimal amount, string charityName)
+    {
+        return string.Join(" ", new[]
+        {
+            Pad(id.ToString(), 4),
+            Pad(date.ToString("yyyy-MM-dd"), 11),
+            Pad(amount.ToString("0.00"), 12),
+            Trim(charityName, 32)
+        });
+    }
+
+    private static string Pad(string value, int width)
+    {
+        value = value ?? string.Empty;
+        return value.Length >= width ? value : value.PadRight(width);
+    }
+
+    private static string Trim(string value, int max)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        return value.Length <= max ? value : value.Substring(0, max - 3) + "...";
     }
 
     private static DateTime StartOfWeek(DateTime value)

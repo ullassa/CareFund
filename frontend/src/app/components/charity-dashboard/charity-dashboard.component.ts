@@ -21,6 +21,8 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
   monthly: Array<{ label: string; amount: number }> = [];
   recent: Array<{ donationId: number; amount: number; donationDate: string }> = [];
 
+  showTrend = false;
+
   fromDate = '';
   toDate = '';
   reportFormat: 'csv' | 'pdf' = 'csv';
@@ -31,15 +33,22 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
     }
   };
 
+  private readonly backListener = (): void => {
+    window.history.pushState(null, '', window.location.href);
+  };
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.load();
     window.addEventListener('storage', this.storageListener);
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', this.backListener);
   }
 
   ngOnDestroy(): void {
     window.removeEventListener('storage', this.storageListener);
+    window.removeEventListener('popstate', this.backListener);
   }
 
   load(): void {
@@ -52,6 +61,9 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
         this.stats = res?.stats ?? this.stats;
         this.monthly = res?.monthly ?? [];
         this.recent = res?.recent ?? [];
+        if (this.monthly.length) {
+          this.showTrend = true;
+        }
         this.loading = false;
       },
       error: (err) => {
@@ -67,7 +79,12 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
   }
 
   applyDateFilter(): void {
+    this.showTrend = true;
     this.load();
+  }
+
+  showTrendChart(): void {
+    this.showTrend = true;
   }
 
   downloadReport(): void {

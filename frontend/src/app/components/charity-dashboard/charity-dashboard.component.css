@@ -123,6 +123,26 @@
   margin-bottom: 0.75rem;
 }
 
+.trend-toggle {
+  border: none;
+  background: none;
+  color: #0f172a;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.trend-toggle:hover {
+  color: #1d4ed8;
+}
+
+.trend-hint {
+  margin: 0 0 0.75rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
 .chart-head h2,
 .ops-card h2 {
   margin: 0;

@@ -23,6 +23,7 @@ export class LandingComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   currentPage = 1;
   pageSize = 6;
+  expandedCharities = new Set<string>();
 
   heroSlides = [
     {
@@ -84,22 +85,6 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn = !!sessionStorage.getItem('token');
-    const role = (sessionStorage.getItem('role') || '').trim().toLowerCase();
-
-    if (this.isLoggedIn && role === 'customer') {
-      this.router.navigate(['/dashboard/customer']);
-      return;
-    }
-
-    if (this.isLoggedIn && role === 'charitymanager') {
-      this.router.navigate(['/dashboard/charity']);
-      return;
-    }
-
-    if (this.isLoggedIn && role === 'admin') {
-      this.router.navigate(['/dashboard/admin']);
-      return;
-    }
 
     if (this.isLoggedIn) {
       this.heroTitle = 'Welcome back to CareFund';
@@ -204,6 +189,37 @@ export class LandingComponent implements OnInit, OnDestroy {
   updateVisibleCharities(): void {
     const start = (this.currentPage - 1) * this.pageSize;
     this.visibleCharities = this.filteredCharities.slice(start, start + this.pageSize);
+  }
+
+  getCharityKey(charity: any): string {
+    return String(
+      charity?.charityId ??
+      charity?.charityRegistrationId ??
+      charity?.id ??
+      charity?.email ??
+      charity?.charityName ??
+      ''
+    );
+  }
+
+  isCharityExpanded(charity: any): boolean {
+    return this.expandedCharities.has(this.getCharityKey(charity));
+  }
+
+  toggleCharityDetails(charity: any): void {
+    const key = this.getCharityKey(charity);
+    if (!key) return;
+    if (this.expandedCharities.has(key)) {
+      this.expandedCharities.delete(key);
+    } else {
+      this.expandedCharities.add(key);
+    }
+  }
+
+  getShortText(value: string | undefined | null, maxLength = 120): string {
+    const text = (value || '').trim();
+    if (!text) return '';
+    return text.length <= maxLength ? text : `${text.slice(0, maxLength).trim()}...`;
   }
 
   selectHeroSlide(index: number): void {

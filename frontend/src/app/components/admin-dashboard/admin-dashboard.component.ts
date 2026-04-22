@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
@@ -12,7 +12,7 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   commentDraft: Record<number, string> = {};
@@ -22,10 +22,20 @@ export class AdminDashboardComponent implements OnInit {
   stats: any = { pending: 0, approved: 0, rejected: 0, totalCustomers: 0, totalCharities: 0, totalDonation: 0 };
   requests: any[] = [];
 
+  private readonly backListener = (): void => {
+    window.history.pushState(null, '', window.location.href);
+  };
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.load();
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', this.backListener);
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('popstate', this.backListener);
   }
 
   load(): void {

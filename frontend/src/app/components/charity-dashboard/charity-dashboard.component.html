@@ -46,7 +46,7 @@
 
     <section class="chart-board">
       <div class="chart-head">
-        <h2>Donation Trend</h2>
+        <button class="trend-toggle" type="button" (click)="showTrendChart()">Donation Trend</button>
         <div class="date-range-filter compact">
           <div class="date-input-group">
             <label for="chart-from-date">From</label>
@@ -60,7 +60,9 @@
         </div>
       </div>
 
-      <div class="bar-chart-container" *ngIf="monthly.length > 0; else noMonthlyData">
+      <p class="trend-hint" *ngIf="!showTrend">Click Donation Trend to view the chart.</p>
+
+      <div class="bar-chart-container" *ngIf="showTrend && monthly.length > 0; else noMonthlyData">
         <div *ngFor="let item of monthly" class="bar-item">
           <div class="bar-wrapper">
             <div class="bar-track">
@@ -73,7 +75,8 @@
       </div>
 
       <ng-template #noMonthlyData>
-        <div class="empty-state"><p>No donation trend data for selected range.</p></div>
+        <div class="empty-state" *ngIf="showTrend"><p>No donation trend data for selected range.</p></div>
+        <div class="empty-state" *ngIf="!showTrend"><p>Click Donation Trend to view the chart.</p></div>
       </ng-template>
     </section>
 

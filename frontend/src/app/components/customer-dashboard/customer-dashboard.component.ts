@@ -32,15 +32,22 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     }
   };
 
+  private readonly backListener = (): void => {
+    window.history.pushState(null, '', window.location.href);
+  };
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.load();
     window.addEventListener('storage', this.storageListener);
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', this.backListener);
   }
 
   ngOnDestroy(): void {
     window.removeEventListener('storage', this.storageListener);
+    window.removeEventListener('popstate', this.backListener);
   }
 
   load(): void {

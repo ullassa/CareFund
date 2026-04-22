@@ -326,6 +326,21 @@
   min-height: 72px;
 }
 
+.read-more {
+  margin: -0.25rem 0 0.6rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #1d4ed8;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.read-more:hover {
+  color: #0f172a;
+}
+
 .charity-meta {
   display: grid;
   gap: 0.45rem;
