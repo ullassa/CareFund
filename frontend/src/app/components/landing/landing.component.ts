@@ -24,22 +24,31 @@ export class LandingComponent implements OnInit, OnDestroy {
   currentPage = 1;
   pageSize = 6;
   expandedCharities = new Set<string>();
+  liveSpotlights: Array<{ name: string; role: string; message: string }> = [];
 
-  heroSlides = [
+  heroSlides: Array<{
+    title: string;
+    subtitle: string;
+    imageUrl: string;
+    tag: string;
+  }> = [
     {
-      title: 'CareFund keeps every donation visible',
-      subtitle: 'See real charities, live updates, and meaningful impact in one place.',
-      imageFile: 'children.jpg'
+      title: 'Children in need of support',
+      subtitle: 'Help children access food, education, and care.',
+      imageUrl: '/images/children.jpg',
+      tag: 'Children'
     },
     {
-      title: 'Donate with confidence',
-      subtitle: 'Every contribution is tracked, notified by email, and synced dashboards.',
-      imageFile: 'oldage.jpg'
+      title: 'Animal welfare matters',
+      subtitle: 'Protect and care for animals in distress.',
+      imageUrl: '/images/Animal.jpg',
+      tag: 'Animal Welfare'
     },
     {
-      title: 'Support causes that matter',
-      subtitle: 'Medical, education, food, disaster relief, and more. Pick your cause and give.',
-      imageFile: 'Animal.jpg'
+      title: 'Elder care and compassion',
+      subtitle: 'Support elderly people with dignity and comfort.',
+      imageUrl: '/images/oldage.jpg',
+      tag: 'Elder Care'
     }
   ];
   currentHeroSlide = 0;
@@ -53,35 +62,27 @@ export class LandingComponent implements OnInit, OnDestroy {
   ];
   heroLogoSrc = this.heroLogoFallbacks[0];
 
-  heroTitle = 'Make a Difference Today';
-  heroSubtitle = 'Connect with real charities, support meaningful causes, and track your impact in one place.';
+  heroTitle = this.heroSlides[0].title;
+  heroSubtitle = this.heroSlides[0].subtitle;
 
   statistics = [
-    { label: 'Charities', value: '0', icon: 'CF' },
-    { label: 'Approved', value: '0', icon: 'CF' },
-    { label: 'Pending', value: '0', icon: 'CF' },
-    { label: 'Active Users', value: '', icon: 'CF' }
-  ];
-
-  testimonials = [
-    {
-      name: 'John Smith',
-      role: 'Charity Partner',
-      message: 'CareFund has helped us reach more people in need. Highly recommended!'
-    },
-    {
-      name: 'Sarah Johnson',
-      role: 'Donor',
-      message: 'Simple, transparent, and truly makes a difference. Love this platform!'
-    },
-    {
-      name: 'Ahmed Hassan',
-      role: 'Beneficiary',
-      message: 'The support we received changed our lives. Thank you CareFund!'
-    }
+    { label: 'Charities', value: '0', icon: 'charity' },
+    { label: 'Approved', value: '0', icon: 'approved' },
+    { label: 'Pending', value: '0', icon: 'pending' },
+    { label: 'Raised', value: '₹0', icon: 'users' }
   ];
 
   constructor(private api: ApiService, private router: Router) {}
+
+  private normalizeImageUrl(url?: string | null): string {
+    const raw = (url || '').trim();
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw.startsWith('/images/') || raw.startsWith('images/')) return raw.startsWith('/') ? raw : `/${raw}`;
+    const path = raw.startsWith('/') ? raw : `/${raw}`;
+    const assetBaseUrl = this.api.baseUrl.replace(/\/api\/?$/i, '');
+    return `${assetBaseUrl}${path}`;
+  }
 
   ngOnInit(): void {
     this.isLoggedIn = !!sessionStorage.getItem('token');
@@ -103,6 +104,15 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   private startHeroRotation(): void {
+    if (this.heroRotationTimer) {
+      clearInterval(this.heroRotationTimer);
+      this.heroRotationTimer = null;
+    }
+
+    if (this.heroSlides.length <= 1) {
+      return;
+    }
+
     this.heroRotationTimer = setInterval(() => {
       const nextIndex = (this.currentHeroSlide + 1) % this.heroSlides.length;
       this.selectHeroSlide(nextIndex);
@@ -118,6 +128,7 @@ export class LandingComponent implements OnInit, OnDestroy {
         const approvedItems = items.filter((item: any) => item.status === 'Approved' && item.isActive !== false);
         this.charities = approvedItems;
         this.filteredCharities = approvedItems;
+        this.buildLiveSpotlights(approvedItems);
         this.currentPage = 1;
         this.updateVisibleCharities();
         this.updateStatistics(items);
@@ -134,11 +145,12 @@ export class LandingComponent implements OnInit, OnDestroy {
   updateStatistics(items: any[]): void {
     const approved = items.filter(item => item.status === 'Approved').length;
     const pending = items.filter(item => item.status === 'Pending').length;
+    const totalRaised = items.reduce((sum, item) => sum + Number(item.totalReceived || 0), 0);
     this.statistics = [
-      { label: 'Charities', value: String(items.filter(item => item.isActive !== false).length), icon: 'CF' },
-      { label: 'Approved', value: String(approved), icon: 'CF' },
-      { label: 'Pending', value: String(pending), icon: 'CF' },
-      { label: 'Active Users', value: '10K+', icon: 'CF' }
+      { label: 'Charities', value: String(items.filter(item => item.isActive !== false).length), icon: 'charity' },
+      { label: 'Approved', value: String(approved), icon: 'approved' },
+      { label: 'Pending', value: String(pending), icon: 'pending' },
+      { label: 'Raised', value: `₹${totalRaised.toLocaleString('en-IN')}`, icon: 'users' }
     ];
   }
 
@@ -236,11 +248,20 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   selectHeroSlide(index: number): void {
+    if (!this.heroSlides.length) {
+      this.heroTitle = 'CareFund Community';
+      this.heroSubtitle = 'Support live causes across the platform.';
+      this.heroImageSrc = this.heroLogoFallbacks[0];
+      this.heroImageFallbacks = [];
+      return;
+    }
+
     this.currentHeroSlide = index;
     const slide = this.heroSlides[index];
     this.heroTitle = slide.title;
     this.heroSubtitle = slide.subtitle;
-    this.heroImageFallbacks = this.buildImageFallbacks(slide.imageFile);
+    const normalizedImage = this.normalizeImageUrl(slide.imageUrl);
+    this.heroImageFallbacks = normalizedImage ? [normalizedImage] : this.buildImageFallbacks('children.jpg');
     this.heroImageSrc = this.heroImageFallbacks[0];
   }
 
@@ -268,6 +289,23 @@ export class LandingComponent implements OnInit, OnDestroy {
     if (nextIndex < this.heroLogoFallbacks.length) {
       this.heroLogoSrc = this.heroLogoFallbacks[nextIndex];
     }
+  }
+
+  private buildLiveSpotlights(items: any[]): void {
+    this.liveSpotlights = items.slice(0, 3).map((item: any) => ({
+      name: item.charityName || 'Live charity',
+      role: item.cause || 'Approved charity',
+      message: `${item.location || 'Location not set'} • Needed ₹${Number(item.targetAmount || 0).toLocaleString('en-IN')} • Received ₹${Number(item.totalReceived || 0).toLocaleString('en-IN')}`
+    }));
+  }
+
+  getCharityImageUrl(charity: any): string {
+    const imageUrl = Array.isArray(charity?.imageUrls) && charity.imageUrls.length > 0 ? charity.imageUrls[0] : '';
+    return this.normalizeImageUrl(imageUrl) || this.heroLogoFallbacks[0];
+  }
+
+  getHeroTag(): string {
+    return this.heroSlides[this.currentHeroSlide]?.tag || 'Live';
   }
 
 }

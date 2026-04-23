@@ -1,1 +1,61 @@
 @import '../about/about.component.css';
+
+.eyebrow {
+	display: inline-block;
+	margin-bottom: 0.5rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: #61305c;
+}
+
+.lead {
+	font-size: 1.05rem;
+	color: #334155;
+	line-height: 1.8;
+}
+
+.policy-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1rem;
+	margin-top: 1.5rem;
+}
+
+.policy-block {
+	background: rgba(246, 242, 251, 0.9);
+	border: 1px solid rgba(97, 48, 92, 0.1);
+	border-radius: 16px;
+	padding: 1.1rem 1rem;
+}
+
+.policy-block.full-width {
+	grid-column: 1 / -1;
+}
+
+.policy-block h2 {
+	margin: 0 0 0.75rem;
+	font-size: 1.05rem;
+	color: #1a1f2a;
+}
+
+.policy-block ul {
+	margin: 0;
+	padding-left: 1.1rem;
+	color: #334155;
+	line-height: 1.7;
+}
+
+.policy-block li {
+	margin-bottom: 0.45rem;
+}
+
+.policy-note {
+	margin-top: 1.4rem;
+	padding: 1rem 1.1rem;
+	border-radius: 14px;
+	background: linear-gradient(135deg, rgba(230, 136, 214, 0.12), rgba(65, 179, 163, 0.12), rgba(204, 128, 155, 0.12));
+	color: #334155;
+	border: 1px solid rgba(97, 48, 92, 0.1);
+}

@@ -8,7 +8,7 @@
         <h1>{{ heroTitle }}</h1>
         <p>{{ heroSubtitle }}</p>
 
-        <div class="hero-carousel-dots">
+        <div class="hero-carousel-dots" *ngIf="heroSlides.length > 1">
           <button
             type="button"
             class="dot"
@@ -24,14 +24,16 @@
           <button class="btn btn-secondary" routerLink="/charity-signup" *ngIf="!isLoggedIn">Start a charity</button>
         </div>
 
-        <div class="hero-highlights">
-          <span>Verified charities</span>
-          <span>Fast donations</span>
-          <span>Email updates</span>
+        <div class="hero-highlights" *ngIf="heroSlides.length > 0">
+          <!-- <span>Image {{ currentHeroSlide + 1 }} of {{ heroSlides.length }}</span> -->
+          <span>{{ heroSlides[currentHeroSlide]?.tag || 'CareFund hero' }}</span>
+          <span>Donate Now Save lives</span>
         </div>
       </div>
       <div class="hero-visual">
-        <div class="hero-badge"></div>
+        <div class="hero-badge" *ngIf="heroSlides.length > 0">
+          {{ getHeroTag() }}
+        </div>
         <div class="hero-image-square">
           <img
             class="hero-main-image"
@@ -55,7 +57,27 @@
   <section class="stats-strip">
     <div class="container stats-grid">
       <div class="stat-card" *ngFor="let stat of statistics">
-        <div class="stat-icon">{{ stat.icon }}</div>
+        <div class="stat-icon" [ngSwitch]="stat.icon" aria-hidden="true">
+          <svg *ngSwitchCase="'charity'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 20h18" />
+            <path d="M5 20V8l7-4 7 4v12" />
+            <path d="M9 20v-6h6v6" />
+          </svg>
+          <svg *ngSwitchCase="'approved'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="m8.5 12 2.5 2.5L16 9.5" />
+          </svg>
+          <svg *ngSwitchCase="'pending'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+          <svg *ngSwitchCase="'users'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+            <circle cx="9.5" cy="8" r="3" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16.5 4.13a3 3 0 0 1 0 5.74" />
+          </svg>
+        </div>
         <div class="stat-value">{{ stat.value }}</div>
         <div class="stat-label">{{ stat.label }}</div>
       </div>
@@ -88,6 +110,9 @@
 
       <div class="charity-grid" *ngIf="visibleCharities.length > 0">
         <article class="charity-card" *ngFor="let charity of visibleCharities">
+          <div class="charity-image">
+            <img [src]="getCharityImageUrl(charity)" [alt]="charity.charityName" />
+          </div>
           <div class="charity-top">
             <div>
               <h3>{{ charity.charityName }}</h3>
@@ -160,7 +185,7 @@
             >
               Donate now
             </button>
-            <button class="btn btn-secondary" routerLink="/login" *ngIf="!isLoggedIn">Learn more</button>
+            <button class="btn btn-secondary" routerLink="/login" *ngIf="!isLoggedIn">View charity</button>
           </div>
         </article>
       </div>
@@ -177,20 +202,26 @@
     <div class="container">
       <div class="section-head center">
         <div>
-          <h2>What people say</h2>
-          <p>Real voices from donors, partners, and beneficiaries.</p>
+          <h2>Live charity spotlight</h2>
+          <p>Current fundraising activity pulled directly from approved charities.</p>
         </div>
       </div>
 
-      <div class="testimonial-grid">
-        <article class="testimonial-card" *ngFor="let item of testimonials">
-          <p class="testimonial-message">“{{ item.message }}”</p>
+      <div class="testimonial-grid" *ngIf="liveSpotlights.length > 0; else noLiveSpotlights">
+        <article class="testimonial-card" *ngFor="let item of liveSpotlights">
+          <p class="testimonial-message">{{ item.message }}</p>
           <div class="testimonial-person">
             <strong>{{ item.name }}</strong>
             <span>{{ item.role }}</span>
           </div>
         </article>
       </div>
+      <ng-template #noLiveSpotlights>
+        <div class="empty-state">
+          <h3>No live charity spotlight available</h3>
+          <p>Approved charity data will appear here once records are available.</p>
+        </div>
+      </ng-template>
     </div>
   </section>
 

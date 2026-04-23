@@ -27,8 +27,16 @@
 
     <section class="kpi-strip">
       <article class="kpi-chip">
+        <span>Target Amount</span>
+        <h3>₹{{ (stats.targetAmount || 0) | number:'1.0-0' }}</h3>
+      </article>
+      <article class="kpi-chip">
         <span>Total Collected</span>
         <h3>₹{{ (stats.totalCollected || 0) | number:'1.0-0' }}</h3>
+      </article>
+      <article class="kpi-chip">
+        <span>Remaining Amount</span>
+        <h3>₹{{ (stats.remainingAmount || 0) | number:'1.0-0' }}</h3>
       </article>
       <article class="kpi-chip">
         <span>Donors</span>
@@ -42,6 +50,20 @@
         <span>Latest Month</span>
         <h3>₹{{ latestMonthAmount | number:'1.0-0' }}</h3>
       </article>
+    </section>
+
+    <section class="chart-board fund-progress-board" *ngIf="stats.targetAmount > 0">
+      <div class="fund-row">
+        <span>Needed: ₹{{ (stats.targetAmount || 0) | number:'1.0-0' }}</span>
+        <span>Received: ₹{{ (stats.totalCollected || 0) | number:'1.0-0' }}</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" [style.width.%]="charityProgressPercent"></div>
+      </div>
+      <div class="fund-row muted">
+        <span>Remaining: ₹{{ (stats.remainingAmount || 0) | number:'1.0-0' }}</span>
+        <span>{{ charityProgressPercent | number:'1.0-0' }}%</span>
+      </div>
     </section>
 
     <section class="chart-board">
@@ -94,7 +116,15 @@
         <h2>Recent Donations</h2>
         <div class="donations-container" *ngIf="recent.length > 0; else noDonations">
           <div *ngFor="let item of recent" class="donation-card">
-            <div class="donation-icon">🎁</div>
+            <div class="donation-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 12v8H4v-8" />
+                <path d="M2 7h20v5H2z" />
+                <path d="M12 7v13" />
+                <path d="M12 7H8.5a2.5 2.5 0 1 1 0-5c2.2 0 3.5 2.5 3.5 5Z" />
+                <path d="M12 7h3.5a2.5 2.5 0 1 0 0-5c-2.2 0-3.5 2.5-3.5 5Z" />
+              </svg>
+            </div>
             <div class="donation-content">
               <div class="donation-amount">₹{{ item.amount | number:'1.0-0' }}</div>
               <div class="donation-date">{{ item.donationDate | date:'mediumDate' }}</div>

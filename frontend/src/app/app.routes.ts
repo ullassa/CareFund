@@ -12,7 +12,7 @@ import { CustomerDashboardComponent } from './components/customer-dashboard/cust
 import { CharityDashboardComponent } from './components/charity-dashboard/charity-dashboard.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { ProfileComponent } from './components/profile/profile.component';
-import { AboutComponent } from './components/about/about.component';
+import { AboutUsComponent } from './components/about-us/about-us.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
 import { TermsComponent } from './components/terms/terms.component';
 
@@ -26,7 +26,7 @@ export const routes: Routes = [
   { path: 'dashboard/charity', component: CharityDashboardComponent },
   { path: 'dashboard/admin', component: AdminDashboardComponent },
   { path: 'profile', component: ProfileComponent },
-  { path: 'about', component: AboutComponent },
+  { path: 'about', component: AboutUsComponent },
   { path: 'privacy', component: PrivacyPolicyComponent },
   { path: 'terms', component: TermsComponent },
   { path: 'impact', component: ImpactComponent },

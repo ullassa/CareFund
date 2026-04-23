@@ -1,0 +1,157 @@
+<app-header></app-header>
+
+<div class="about-page">
+  <!-- Hero Section -->
+  <section class="about-hero">
+    <div class="hero-content">
+      <h1>About CareFund</h1>
+      <p>Connecting compassionate donors with verified charities for real impact</p>
+    </div>
+  </section>
+
+  <!-- Our Story -->
+  <section class="our-story">
+    <div class="container">
+      <div class="story-content">
+        <h2>Our Story</h2>
+        <p>
+          CareFund was built on a simple belief: direct connections create real change. 
+          We removed the layers of complexity that often stand between people who want to help and causes that need support.
+        </p>
+        <p>
+          Today, CareFund connects thousands of donors with verified charities across India. 
+          Every donation is transparent, every impact is real, and every rupee counts.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Values -->
+  <section class="our-values">
+    <div class="container">
+      <h2>Our Values</h2>
+      <div class="values-grid">
+        <div class="value-card" *ngFor="let value of values">
+          <div class="value-icon" [ngSwitch]="value.icon" aria-hidden="true">
+            <svg *ngSwitchCase="'transparency'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg *ngSwitchCase="'trust'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 12l3 3 5-5" />
+              <path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 9 9" />
+              <path d="M12 21a9 9 0 0 1-9-9" />
+            </svg>
+            <svg *ngSwitchCase="'impact'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="5" />
+              <circle cx="12" cy="12" r="1.5" />
+            </svg>
+            <svg *ngSwitchDefault viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M3 12h18" />
+              <path d="M12 3a14.5 14.5 0 0 1 4 9 14.5 14.5 0 0 1-4 9 14.5 14.5 0 0 1-4-9 14.5 14.5 0 0 1 4-9Z" />
+            </svg>
+          </div>
+          <h3>{{ value.title }}</h3>
+          <p>{{ value.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How We Work -->
+  <section class="how-we-work">
+    <div class="container">
+      <h2>How We Work</h2>
+      <div class="process-grid">
+        <div class="process-step">
+          <div class="step-number">1</div>
+          <h3>Charities Register</h3>
+          <p>Verified organizations submit their causes and funding goals</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">2</div>
+          <h3>We Verify</h3>
+          <p>We verify each organization and their missions</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">3</div>
+          <h3>Donors Choose</h3>
+          <p>Donors browse and support causes they care about</p>
+        </div>
+        <div class="process-step">
+          <div class="step-number">4</div>
+          <h3>Impact Happens</h3>
+          <p>Funds go directly to charities. Progress is tracked in real-time</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+  <section class="why-choose-us">
+    <div class="container">
+      <h2>Why Choose CareFund</h2>
+      <div class="benefits-list">
+        <div class="benefit-item">
+          <div class="benefit-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </div>
+          <div class="benefit-content">
+            <h3>Real-Time Tracking</h3>
+            <p>See every donation and its impact instantly</p>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </div>
+          <div class="benefit-content">
+            <h3>Verified Charities</h3>
+            <p>Every organization is vetted and approved</p>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </div>
+          <div class="benefit-content">
+            <h3>Zero Complications</h3>
+            <p>Direct connection. Simple process. Fast results</p>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </div>
+          <div class="benefit-content">
+            <h3>Full Transparency</h3>
+            <p>Know exactly where your money goes</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Make a Difference?</h2>
+      <div class="cta-buttons">
+        <a routerLink="/customer-signup" class="btn btn-primary">Start Donating</a>
+        <a routerLink="/charity-signup" class="btn btn-secondary">Become a Partner</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<app-footer></app-footer>

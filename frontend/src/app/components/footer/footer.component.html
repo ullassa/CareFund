@@ -4,7 +4,11 @@
       <!-- Brand Section -->
       <div class="footer-section">
         <div class="footer-brand">
-          <span class="brand-icon">CF</span>
+          <span class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21s-7-4.4-9.2-8.7C.9 8.3 3 5 6.7 5c2.1 0 3.7 1.1 4.9 2.8C12.8 6.1 14.4 5 16.5 5 20.2 5 22.3 8.3 21.2 12.3 19 16.6 12 21 12 21Z" />
+            </svg>
+          </span>
           <span class="brand-text">CareFund</span>
         </div>
         <p class="brand-description">Making a difference, one donation at a time.</p>
@@ -43,7 +47,7 @@
              rel="noopener noreferrer"
              class="social-link"
              title="{{ social.label }}">
-            {{ social.icon }}
+            <span class="social-icon">{{ social.icon }}</span>
           </a>
         </div>
       </div>
@@ -69,7 +73,12 @@
 <section class="contact-modal" *ngIf="contactOpen" aria-modal="true" role="dialog">
   <header class="contact-modal-head">
     <h3>Contact Us</h3>
-    <button type="button" class="icon-button" (click)="closeContact()">✕</button>
+    <button type="button" class="icon-button" (click)="closeContact()" aria-label="Close contact form">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18" />
+        <path d="m6 6 12 12" />
+      </svg>
+    </button>
   </header>
 
   <p class="contact-modal-copy">Share your email and reason for contact. We will review your message shortly.</p>

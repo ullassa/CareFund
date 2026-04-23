@@ -43,11 +43,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
   background: linear-gradient(135deg, #ff6b4a, #f4b247);
   color: #1a1210;
   letter-spacing: 0.08em;
+  overflow: hidden;
+}
+
+.logo-icon svg {
+  width: 70%;
+  height: 70%;
+  display: block;
 }
 
 .logo-text {

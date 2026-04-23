@@ -4,42 +4,14 @@
   <!-- Hero Section -->
   <section class="blogs-hero">
     <div class="hero-content">
-      <h1>Our Blog</h1>
-      <p>Stories, insights, and updates from the CareFund community</p>
+      <h1>Active Charities</h1>
+      <p>Real fundraising initiatives from verified organizations</p>
     </div>
   </section>
 
-  <!-- Featured Posts -->
-  <section class="featured-section">
+  <!-- Category Filter -->
+  <section class="filter-section">
     <div class="container">
-      <h2>Featured Stories</h2>
-      <div class="featured-grid">
-        <article class="featured-post" *ngFor="let post of featuredPosts">
-          <div class="post-image">{{ post.image }}</div>
-          <div class="post-content">
-            <span class="post-category">{{ post.category }}</span>
-            <h3>{{ post.title }}</h3>
-            <p class="post-excerpt">{{ post.excerpt }}</p>
-            <div class="post-meta">
-              <span>{{ post.author }}</span>
-              <span>•</span>
-              <span>{{ post.date }}</span>
-              <span>•</span>
-              <span>{{ post.readTime }}</span>
-            </div>
-            <a href="#read-more" class="read-more">Read More →</a>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- All Posts Section -->
-  <section class="all-posts-section">
-    <div class="container">
-      <h2>All Articles</h2>
-
-      <!-- Category Filter -->
       <div class="category-filter">
         <button
           class="category-btn"
@@ -50,47 +22,56 @@
           {{ category }}
         </button>
       </div>
+    </div>
+  </section>
 
-      <!-- Posts Grid -->
+  <!-- Main Posts Grid -->
+  <section class="posts-section">
+    <div class="container">
+      <div *ngIf="isLoading" class="loading-state">
+        <p>Loading charities...</p>
+      </div>
+
       <div class="posts-grid">
         <article class="post-card" *ngFor="let post of filteredPosts">
-          <div class="card-image">{{ post.image }}</div>
-          <div class="card-content">
-            <span class="post-badge">{{ post.category }}</span>
-            <h3>{{ post.title }}</h3>
-            <p class="post-excerpt">{{ post.excerpt }}</p>
+          <div class="card-image" *ngIf="post.imageUrl">
+            <img [src]="normalizeImageUrl(post.imageUrl)" [alt]="post.title" class="post-img"/>
           </div>
-          <div class="card-footer">
-            <div class="post-info">
-              <span class="author">{{ post.author }}</span>
-              <span class="date">{{ post.date }}</span>
+          <div class="card-body" *ngIf="!post.imageUrl">
+            <div class="no-image">{{ post.cause }}</div>
+          </div>
+
+          <div class="card-content">
+            <span class="badge">{{ post.cause }}</span>
+            <h3>{{ post.title }}</h3>
+            <p class="location">
+              <span class="location-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </span>
+              {{ post.location }}
+            </p>
+            
+            <div class="progress-info">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="post.progress"></div>
+              </div>
+              <div class="progress-text">
+                <span>₹{{ post.raised.toLocaleString('en-IN') }}</span>
+                <span>/ ₹{{ post.target.toLocaleString('en-IN') }}</span>
+              </div>
             </div>
-            <a href="#read-more" class="read-btn">Read →</a>
+
+            <p class="description">{{ post.description }}</p>
           </div>
         </article>
       </div>
 
-      <!-- No Posts Message -->
       <div *ngIf="filteredPosts.length === 0" class="no-posts">
-        <p>No articles found in this category.</p>
+        <p>No charities found in this category.</p>
       </div>
-    </div>
-  </section>
-
-  <!-- Newsletter -->
-  <section class="newsletter-section">
-    <div class="container">
-      <h2>Subscribe to Our Newsletter</h2>
-      <p>Get the latest stories and updates delivered to your inbox</p>
-      <form class="newsletter-form" (ngSubmit)="$event.preventDefault()">
-        <input
-          type="email"
-          placeholder="Enter your email"
-          required
-          class="newsletter-input"
-        >
-        <button type="submit" class="btn btn-primary">Subscribe</button>
-      </form>
     </div>
   </section>
 </div>

@@ -23,10 +23,13 @@
   border-radius: 999px;
   background: #dcfce7;
   color: #166534;
-  font-size: 2rem;
-  font-weight: 800;
   display: grid;
   place-items: center;
+}
+
+.icon svg {
+  width: 2rem;
+  height: 2rem;
 }
 
 h1 {

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
+import { OnInit } from '@angular/core';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-impact',
@@ -11,55 +13,52 @@ import { FooterComponent } from '../footer/footer.component';
   templateUrl: './impact.component.html',
   styleUrls: ['./impact.component.css']
 })
-export class ImpactComponent {
-  impactMetrics = [
-    { icon: '', label: 'Total Donations', value: '$200', description: 'Funds distributed to verified causes' },
-    { icon: '', label: 'Active Charities', value: '2', description: 'Verified charity partners' },
-    { icon: '', label: 'Lives Impacted', value: '5+', description: 'People helped globally' },
-    { icon: '', label: 'Reach', value: '1 Country', description: 'Global charitable reach' },
-  ];
+export class ImpactComponent implements OnInit {
+  metrics: Array<{ icon: string; label: string; value: string }> = [];
+  stories: Array<{ title: string; cause: string; raised: number; target: number; progress: number; imageUrl: string }> = [];
 
-  impactStories = [
-    {
-      title: 'Medical Emergency Relief',
-      cause: 'Medical',
-      description: 'We provided emergency medical assistance to 500+ families in rural areas during the health crisis.',
-      impact: '$500K disbursed',
-      beneficiaries: '500+ families',
-      image: 'MED'
-    },
-    {
-      title: 'Education for Underprivileged',
-      cause: 'Education',
-      description: 'Built and equipped 10 schools providing quality education to 2,000+ children.',
-      impact: '$300K utilized',
-      beneficiaries: '2,000+ children',
-      image: 'EDU'
-    },
-    {
-      title: 'Food Security Initiative',
-      cause: 'Food & Hunger',
-      description: 'Distributed meals to 10,000+ underprivileged people during monsoon season.',
-      impact: '$200K spent',
-      beneficiaries: '10,000+ people',
-      image: 'FOOD'
-    },
-    {
-      title: 'Environmental Conservation',
-      cause: 'Environmental',
-      description: 'Planted 100,000 trees and cleaned 50 water bodies across the region.',
-      impact: '$150K invested',
-      beneficiaries: 'Entire ecosystem',
-      image: 'GREEN'
-    }
-  ];
+  constructor(private api: ApiService) {}
 
-  // milestones = [
-  //   { year: '20-03-2026', event: 'Started Planning', icon: 'START' },
-  //   { year: '2023', event: 'First 1000 Donors Joined', icon: 'GROWTH' },
-  //   { year: '2024', event: 'Reached 50K Lives Impacted', icon: 'IMPACT' },
-  //   { year: '2024', event: '150+ Charity Partners Onboarded', icon: 'PARTNER' },
-  //   { year: '2025', event: 'Expanded to 25+ Countries', icon: 'GLOBAL' },
-  //   { year: '2026', event: '$2.5M+ Total Donations', icon: 'TOTAL' }
-  // ];
+  ngOnInit(): void {
+    this.loadImpact();
+  }
+
+  loadImpact(): void {
+    this.api.getPublicCharities().subscribe({
+      next: (response: any) => {
+        const items = (response?.items ?? []).filter((item: any) => item.status === 'Approved');
+        
+        const totalRaised = items.reduce((sum: number, item: any) => sum + Number(item.totalReceived || 0), 0);
+        const totalNeeded = items.reduce((sum: number, item: any) => sum + Number(item.targetAmount || 0), 0);
+        const totalRemaining = totalNeeded - totalRaised;
+
+        this.metrics = [
+          { icon: 'raised', label: 'Total Raised', value: `₹${totalRaised.toLocaleString('en-IN')}` },
+          { icon: 'partners', label: 'Active Partners', value: String(items.length) },
+          { icon: 'target', label: 'Total Target', value: `₹${totalNeeded.toLocaleString('en-IN')}` },
+          { icon: 'progress', label: 'Overall Progress', value: `${Math.round((totalRaised / totalNeeded) * 100) || 0}%` }
+        ];
+
+        this.stories = items.slice(0, 6).map((item: any) => ({
+          title: item.charityName || 'Charity Initiative',
+          cause: item.cause || 'Community Support',
+          raised: Number(item.totalReceived || 0),
+          target: Number(item.targetAmount || 0),
+          progress: Number(item.progressPercent || 0),
+          imageUrl: Array.isArray(item.imageUrls) && item.imageUrls.length > 0 ? item.imageUrls[0] : ''
+        }));
+      },
+      error: () => {
+        this.metrics = [];
+        this.stories = [];
+      }
+    });
+  }
+
+  normalizeImageUrl(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('/images/')) return url;
+    if (url.startsWith('http')) return url;
+    return `http://localhost:5294${url.startsWith('/') ? url : '/' + url}`;
+  }
 }

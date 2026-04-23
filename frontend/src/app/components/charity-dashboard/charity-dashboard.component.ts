@@ -17,7 +17,7 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
   error = '';
 
   charity: any = null;
-  stats = { totalCollected: 0, donationsCount: 0 };
+  stats = { totalCollected: 0, donationsCount: 0, targetAmount: 0, remainingAmount: 0, progressPercent: 0 };
   monthly: Array<{ label: string; amount: number }> = [];
   recent: Array<{ donationId: number; amount: number; donationDate: string }> = [];
 
@@ -74,6 +74,12 @@ export class CharityDashboardComponent implements OnInit, OnDestroy {
   get latestMonthAmount(): number {
     if (!this.monthly.length) return 0;
     return this.monthly[this.monthly.length - 1].amount;
+  }
+
+  get charityProgressPercent(): number {
+    const progress = Number(this.stats?.progressPercent ?? 0);
+    if (Number.isNaN(progress)) return 0;
+    return Math.max(0, Math.min(100, progress));
   }
 
   get maxMonthlyAmount(): number {
