@@ -36,6 +36,7 @@
       <aside class="admin-sidebar">
         <button type="button" class="sidebar-btn" [class.active]="activePanel === 'donors'" (click)="setActivePanel('donors')">Donors</button>
         <button type="button" class="sidebar-btn" [class.active]="activePanel === 'charities'" (click)="setActivePanel('charities')">Charities</button>
+        <button type="button" class="sidebar-btn" [class.active]="activePanel === 'feedback'" (click)="setActivePanel('feedback')">Feedback</button>
       </aside>
 
       <div class="admin-main-panels">
@@ -203,6 +204,8 @@
                                 <th>Charity</th>
                                 <th>Amount</th>
                                 <th>Date</th>
+                                <th>Donor</th>
+                                <th>Email</th>
                                 <th>Payment Method</th>
                                 <th>Transaction Ref</th>
                               </tr>
@@ -212,6 +215,8 @@
                                 <td>{{ payment.charityName || 'Not provided' }}</td>
                                 <td>₹{{ (payment.amount || 0) | number:'1.0-0' }}</td>
                                 <td>{{ payment.donationDate | date:'mediumDate' }}</td>
+                                <td>{{ payment.donorName || donor.name || 'Not provided' }}</td>
+                                <td>{{ payment.donorEmail || donor.email || 'Not provided' }}</td>
                                 <td>{{ payment.paymentMethod || 'Unknown' }}</td>
                                 <td>{{ payment.transactionReference || 'N/A' }}</td>
                               </tr>
@@ -233,6 +238,44 @@
           <ng-template #noCustomers>
             <div class="empty-state">
               <p class="empty-text">No donors found</p>
+            </div>
+          </ng-template>
+        </section>
+
+        <section class="requests-section" *ngIf="activePanel === 'feedback'">
+          <div class="table-head">
+            <h2>Submitted Feedback</h2>
+            <span>{{ feedbacks.length }} items</span>
+          </div>
+
+          <div class="table-wrap" *ngIf="feedbacks.length > 0; else noFeedbacks">
+            <table class="requests-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Donor</th>
+                  <th>Charity</th>
+                  <th>Rating</th>
+                  <th>Experience</th>
+                  <th>Suggestion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of feedbacks">
+                  <td>{{ item.createdAt | date:'mediumDate' }}</td>
+                  <td>{{ item.donorName || 'Unknown' }}</td>
+                  <td>{{ item.charityName || 'Not provided' }}</td>
+                  <td>{{ item.rating }}/5</td>
+                  <td>{{ item.experience || 'Not provided' }}</td>
+                  <td>{{ item.suggestion || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noFeedbacks>
+            <div class="empty-state">
+              <p class="empty-text">No feedback submitted yet</p>
             </div>
           </ng-template>
         </section>

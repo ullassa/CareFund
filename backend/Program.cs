@@ -145,6 +145,32 @@ END");
         app.Logger.LogWarning(ex, "TargetAmount column fix skipped. It may already exist.");
     }
 
+    // Ensure Feedbacks table exists (compatibility when migrations are skipped)
+    try
+    {
+        db.Database.ExecuteSqlRaw(@"
+IF OBJECT_ID('dbo.Feedbacks', 'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[Feedbacks] (
+        [FeedbackId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        [UserId] INT NULL,
+        [DonationId] INT NULL,
+        [CharityName] NVARCHAR(200) NOT NULL DEFAULT(''),
+        [Amount] DECIMAL(18,2) NULL,
+        [PaymentMethod] NVARCHAR(50) NOT NULL DEFAULT(''),
+        [PaymentReference] NVARCHAR(120) NOT NULL DEFAULT(''),
+        [Rating] INT NOT NULL,
+        [Experience] NVARCHAR(2000) NOT NULL,
+        [Suggestion] NVARCHAR(2000) NOT NULL DEFAULT(''),
+        [CreatedAt] DATETIME2 NOT NULL DEFAULT(SYSUTCDATETIME())
+    );
+END");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Feedbacks table fix skipped. It may already exist.");
+    }
+
     if (!schemaReady)
     {
         try

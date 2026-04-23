@@ -5,7 +5,8 @@
     <div class="title-row">
       <div>
         <h1>Profile</h1>
-        <p>Edit your details here. Changes are saved instantly and shared across tabs.</p>
+        <p *ngIf="isCharityManager">View your profile details here.</p>
+        <p *ngIf="!isCharityManager">Edit your details here. Changes are saved instantly and shared across tabs.</p>
       </div>
       <span class="role-badge">{{ role || 'User' }}</span>
     </div>
@@ -16,66 +17,66 @@
     <div class="profile-grid">
       <label>
         Name
-        <input [(ngModel)]="profile.name" type="text" [disabled]="!isEditing" />
+        <input [(ngModel)]="profile.name" type="text" [disabled]="!canEditField('name')" />
       </label>
 
       <label>
         Email
-        <input [(ngModel)]="profile.email" type="email" [disabled]="!isEditing" />
+        <input [(ngModel)]="profile.email" type="email" [disabled]="!canEditField('email')" />
       </label>
 
       <label>
         Phone
-        <input [(ngModel)]="profile.phoneNumber" type="text" [disabled]="!isEditing" />
+        <input [(ngModel)]="profile.phoneNumber" type="text" [disabled]="!canEditField('phone')" />
       </label>
 
       <label>
         City / Address
-        <input [(ngModel)]="profile.city" type="text" placeholder="City" [disabled]="!isEditing" />
+        <input [(ngModel)]="profile.city" type="text" placeholder="City" [disabled]="!canEditField('city')" />
       </label>
     </div>
 
     <section *ngIf="role === 'CharityManager'" class="charity-box">
       <h2>Charity Details</h2>
-      <p class="note">Any change here will require admin approval again.</p>
+      <p class="note">Charity profile details are read-only.</p>
 
       <div class="profile-grid">
         <label>
           Address Line
-          <input [(ngModel)]="charityProfile.addressLine" type="text" [disabled]="!isEditing" />
+          <input [(ngModel)]="charityProfile.addressLine" type="text" [disabled]="true" />
         </label>
 
         <label>
           Cause Type
-          <input [(ngModel)]="charityProfile.causeType" type="text" [disabled]="!isEditing" />
+          <input [(ngModel)]="charityProfile.causeType" type="text" [disabled]="true" />
         </label>
 
         <label class="full">
           Mission
-          <textarea [(ngModel)]="charityProfile.mission" rows="3" [disabled]="!isEditing"></textarea>
+          <textarea [(ngModel)]="charityProfile.mission" rows="3" [disabled]="true"></textarea>
         </label>
 
         <label class="full">
           About
-          <textarea [(ngModel)]="charityProfile.about" rows="3" [disabled]="!isEditing"></textarea>
+          <textarea [(ngModel)]="charityProfile.about" rows="3" [disabled]="true"></textarea>
         </label>
 
         <label class="full">
           Activities
-          <textarea [(ngModel)]="charityProfile.activities" rows="3" [disabled]="!isEditing"></textarea>
+          <textarea [(ngModel)]="charityProfile.activities" rows="3" [disabled]="true"></textarea>
         </label>
 
         <label class="full">
           Social Media Link
-          <input [(ngModel)]="charityProfile.socialMediaLink" type="url" [disabled]="!isEditing" />
+          <input [(ngModel)]="charityProfile.socialMediaLink" type="url" [disabled]="true" />
         </label>
       </div>
     </section>
 
     <div class="actions">
-      <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="!isEditing">Edit</button>
-      <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="isEditing">Cancel</button>
-      <button type="button" class="btn primary" (click)="save()" [disabled]="saving">
+      <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="canEditProfile && !isEditing">Edit</button>
+      <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="canEditProfile && isEditing">Cancel</button>
+      <button type="button" class="btn primary" (click)="save()" [disabled]="saving" *ngIf="canEditProfile && isEditing">
         {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>
       <a routerLink="/" class="btn secondary">Back Home</a>
@@ -93,7 +94,7 @@
       </details>
       <details>
         <summary>Can Charity updates be instant?</summary>
-        <p>Charity profile updates require admin approval and move the profile back to pending review.</p>
+        <p>Charity profile fields are view-only in this page and cannot be edited.</p>
       </details>
     </section>
   </section>

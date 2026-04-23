@@ -1,13 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-payment-success',
   standalone: true,
-  imports: [CommonModule, RouterModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent],
   templateUrl: './payment-success.component.html',
   styleUrls: ['./payment-success.component.css']
 })
@@ -19,8 +21,16 @@ export class PaymentSuccessComponent implements OnInit {
   shareUrl = '';
   shareText = '';
   copied = false;
+  feedbackSubmitted = false;
+  feedbackSaving = false;
+  feedbackError = '';
+  feedbackForm = {
+    rating: 5,
+    experience: '',
+    suggestion: ''
+  };
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private api: ApiService) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -54,8 +64,8 @@ export class PaymentSuccessComponent implements OnInit {
     return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.shareUrl)}`;
   }
 
-  async copyShareText(): Promise<void> {
-    const textToCopy = `${this.shareText} ${this.shareUrl}`;
+  async copyShareLink(): Promise<void> {
+    const textToCopy = this.shareUrl;
     try {
       await navigator.clipboard.writeText(textToCopy);
       this.copied = true;
@@ -65,5 +75,48 @@ export class PaymentSuccessComponent implements OnInit {
     } catch {
       this.copied = false;
     }
+  }
+
+  submitFeedback(): void {
+    if (!this.feedbackForm.experience.trim()) {
+      this.feedbackError = 'Please share your experience before submitting feedback.';
+      return;
+    }
+
+    this.feedbackSaving = true;
+    this.feedbackError = '';
+
+    const payload = {
+      charityName: this.charityName,
+      amount: this.amount || 0,
+      paymentMethod: this.paymentMethod,
+      paymentReference: this.reference,
+      rating: this.feedbackForm.rating,
+      experience: this.feedbackForm.experience.trim(),
+      suggestion: this.feedbackForm.suggestion?.trim() || ''
+    };
+
+    this.api.submitFeedback(payload).subscribe({
+      next: () => {
+        this.feedbackSaving = false;
+        this.feedbackSubmitted = true;
+      },
+      error: (err) => {
+        this.feedbackSaving = false;
+        if (err?.status === 401 || err?.status === 403) {
+          this.feedbackError = 'Your session expired. Please login again and resubmit feedback.';
+          return;
+        }
+
+        const apiMessage =
+          (typeof err?.error === 'string' ? err.error : '') ||
+          err?.error?.message ||
+          err?.error?.detail ||
+          err?.message ||
+          '';
+
+        this.feedbackError = apiMessage || 'Unable to submit feedback right now.';
+      }
+    });
   }
 }

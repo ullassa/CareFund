@@ -1,56 +1,111 @@
 <app-header></app-header>
 
 <main class="success-page">
-  <section class="success-card">
-    <div class="icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="m8 12 2.7 2.7L16 9.4" />
-      </svg>
-    </div>
-    <h1>Payment Successful</h1>
-    <p>Your donation has been completed successfully.</p>
+  <section class="success-section section-payment">
+    <div class="section-inner payment-inner">
+      <div class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m8 12 2.7 2.7L16 9.4" />
+        </svg>
+      </div>
+      <h1>Payment Successful</h1>
+      <p class="section-copy">Your donation has been completed successfully.</p>
 
-    <div class="details">
-      <div class="row">
-        <span>Charity</span>
-        <strong>{{ charityName }}</strong>
+      <div class="details">
+        <div class="row">
+          <span>Charity</span>
+          <strong>{{ charityName }}</strong>
+        </div>
+        <div class="row">
+          <span>Amount</span>
+          <strong>₹{{ amount }}</strong>
+        </div>
+        <div class="row">
+          <span>Payment Method</span>
+          <strong>{{ paymentMethod }}</strong>
+        </div>
+        <div class="row">
+          <span>Reference</span>
+          <strong>{{ reference }}</strong>
+        </div>
       </div>
-      <div class="row">
-        <span>Amount</span>
-        <strong>₹{{ amount }}</strong>
-      </div>
-      <div class="row">
-        <span>Payment Method</span>
-        <strong>{{ paymentMethod }}</strong>
-      </div>
-      <div class="row">
-        <span>Reference</span>
-        <strong>{{ reference }}</strong>
+
+      <div class="actions">
+        <a routerLink="/" class="btn btn-primary">Go to Home</a>
+        <a routerLink="/donate" class="btn btn-secondary">Donate Again</a>
       </div>
     </div>
+  </section>
 
-    <div class="actions">
-      <a routerLink="/" class="btn btn-primary">Go to Home</a>
-      <a routerLink="/donate" class="btn btn-secondary">Donate Again</a>
-    </div>
-
-    <section class="share-section">
-      <h2>Share this on social media</h2>
+  <section class="success-section section-share">
+    <div class="section-inner share-inner">
+      <h2>Share on Social Media</h2>
       <p class="share-copy">{{ shareText }}</p>
 
       <div class="share-links">
-        <a [href]="whatsappShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">WhatsApp</a>
-        <a [href]="twitterShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">X</a>
-        <a [href]="facebookShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">Facebook</a>
-        <a [href]="linkedInShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">LinkedIn</a>
+        <a [href]="whatsappShareLink" target="_blank" rel="noopener noreferrer" class="share-btn whatsapp">WhatsApp</a>
+        <a [href]="facebookShareLink" target="_blank" rel="noopener noreferrer" class="share-btn facebook">Facebook</a>
+        <a [href]="linkedInShareLink" target="_blank" rel="noopener noreferrer" class="share-btn linkedin">LinkedIn</a>
       </div>
 
       <div class="share-link-row">
         <input type="text" [value]="shareUrl" readonly class="share-link-input" />
-        <button type="button" class="copy-btn" (click)="copyShareText()">{{ copied ? 'Copied' : 'Copy Post + Link' }}</button>
+        <button type="button" class="copy-btn" (click)="copyShareLink()">{{ copied ? 'Copied' : 'Copy Link' }}</button>
       </div>
-    </section>
+    </div>
+  </section>
+
+  <section class="success-section section-feedback">
+    <div class="section-inner feedback-inner">
+      <h2>Give us your feedback</h2>
+      <p class="feedback-copy">Tell us how your donation experience was. Your feedback helps us improve CareFund.</p>
+
+      <div *ngIf="feedbackSubmitted" class="feedback-success">
+        Thank you for your feedback. We appreciate your support and suggestions.
+      </div>
+
+      <div *ngIf="feedbackError" class="feedback-error">{{ feedbackError }}</div>
+
+      <form class="feedback-form" (ngSubmit)="submitFeedback()" *ngIf="!feedbackSubmitted">
+        <label>
+          Rating
+          <select [(ngModel)]="feedbackForm.rating" name="rating" required>
+            <option [ngValue]="0" disabled>Select rating</option>
+            <option [ngValue]="5">5 - Excellent</option>
+            <option [ngValue]="4">4 - Very Good</option>
+            <option [ngValue]="3">3 - Good</option>
+            <option [ngValue]="2">2 - Fair</option>
+            <option [ngValue]="1">1 - Poor</option>
+          </select>
+        </label>
+
+        <label>
+          Experience
+          <textarea
+            [(ngModel)]="feedbackForm.experience"
+            name="experience"
+            rows="3"
+            placeholder="Share your experience"
+            required
+          ></textarea>
+        </label>
+
+        <label>
+          Suggestions (optional)
+          <textarea
+            [(ngModel)]="feedbackForm.suggestion"
+            name="suggestion"
+            rows="3"
+            placeholder="Any ideas to improve CareFund?"
+          ></textarea>
+        </label>
+
+        <button type="submit" class="submit-feedback" [disabled]="feedbackSaving">
+          {{ feedbackSaving ? 'Submitting...' : 'Submit Feedback' }}
+        </button>
+      </form>
+    </div>
   </section>
 </main>
 

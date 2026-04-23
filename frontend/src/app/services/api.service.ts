@@ -83,6 +83,18 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/donations`, payload);
   }
 
+  submitFeedback(payload: {
+    charityName?: string;
+    amount?: number;
+    paymentMethod?: string;
+    paymentReference?: string;
+    rating: number;
+    experience: string;
+    suggestion?: string;
+  }) {
+    return this.http.post(`${this.baseUrl}/feedback`, payload);
+  }
+
   getPublicCharities(keyword?: string, cause?: string) {
     const params = new URLSearchParams();
     if (keyword) params.set('keyword', keyword);
@@ -165,6 +177,10 @@ export class ApiService {
 
   getAdminDonors() {
     return this.http.get(`${this.baseUrl}/admin/donors`);
+  }
+
+  getAdminFeedbacks() {
+    return this.http.get(`${this.baseUrl}/admin/feedbacks`);
   }
 
   getAdminCharityRequests(status?: string) {

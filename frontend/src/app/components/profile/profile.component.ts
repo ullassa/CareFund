@@ -45,6 +45,30 @@ export class ProfileComponent implements OnInit {
 
   constructor(private api: ApiService) {}
 
+  get isCharityManager(): boolean {
+    return this.role === 'CharityManager';
+  }
+
+  get isCustomer(): boolean {
+    return this.role === 'Customer';
+  }
+
+  get canEditProfile(): boolean {
+    return this.role !== 'CharityManager';
+  }
+
+  canEditField(field: 'name' | 'email' | 'phone' | 'city'): boolean {
+    if (!this.isEditing) {
+      return false;
+    }
+
+    if (this.isCustomer) {
+      return field === 'name' || field === 'city';
+    }
+
+    return true;
+  }
+
   ngOnInit(): void {
     this.load();
     window.addEventListener('storage', this.storageListener);
@@ -92,38 +116,8 @@ export class ProfileComponent implements OnInit {
     this.error = '';
     this.message = '';
 
-    if (this.role === 'CharityManager') {
-      const confirmed = window.confirm('Updating your charity profile will send the request for admin approval and temporarily set the charity back to Pending. Continue?');
-      if (!confirmed) {
-        return;
-      }
-
-      this.saving = true;
-      this.api.updateCharityProfile({
-        name: this.profile.name,
-        email: this.profile.email,
-        phoneNumber: this.profile.phoneNumber,
-        city: this.profile.city,
-        addressLine: this.charityProfile.addressLine,
-        mission: this.charityProfile.mission,
-        about: this.charityProfile.about,
-        activities: this.charityProfile.activities,
-        socialMediaLink: this.charityProfile.socialMediaLink,
-        causeType: this.charityProfile.causeType
-      }).subscribe({
-        next: (res: any) => {
-          this.saving = false;
-          this.message = res?.message || 'Charity profile update submitted for approval.';
-          sessionStorage.setItem('userName', this.profile.name || '');
-          localStorage.setItem('cf:profile:refresh', Date.now().toString());
-          localStorage.setItem('cf:auth:changed', Date.now().toString());
-          this.load();
-        },
-        error: (err) => {
-          this.saving = false;
-          this.error = err?.error?.message || 'Unable to submit charity profile update.';
-        }
-      });
+    if (this.isCharityManager) {
+      this.error = 'Charity profiles are read-only and cannot be edited.';
       return;
     }
 
@@ -150,6 +144,10 @@ export class ProfileComponent implements OnInit {
   }
 
   enableEdit(): void {
+    if (!this.canEditProfile) {
+      return;
+    }
+
     this.isEditing = true;
     this.message = '';
   }

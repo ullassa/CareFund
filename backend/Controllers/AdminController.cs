@@ -139,8 +139,15 @@ public class AdminController : ControllerBase
                     donationId = x.DonationId,
                     amount = x.Amount,
                     donationDate = x.DonationDate,
+                    isAnonymous = x.IsAnonymous,
                     paymentMethod = x.Payment != null ? x.Payment.PaymentMethod.ToString() : string.Empty,
                     transactionReference = x.Payment?.TransactionReference,
+                    donorName = x.IsAnonymous
+                        ? "Anonymous"
+                        : (customer?.User?.UserName ?? "Unknown donor"),
+                    donorEmail = x.IsAnonymous
+                        ? "Hidden"
+                        : (customer?.User?.Email ?? string.Empty),
                     charityName = x.CharityRegistrationRequest?.User != null
                         ? x.CharityRegistrationRequest.User.UserName
                         : x.CharityRegistrationRequest != null ? x.CharityRegistrationRequest.ManagerName : string.Empty,
@@ -153,6 +160,35 @@ public class AdminController : ControllerBase
         .ToList();
 
         return Ok(new { success = true, items = donors });
+    }
+
+    [HttpGet("feedbacks")]
+    public async Task<IActionResult> GetFeedbacks()
+    {
+        var items = await _context.Feedbacks
+            .AsNoTracking()
+            .Include(f => f.User)
+            .OrderByDescending(f => f.CreatedAt)
+            .Take(200)
+            .Select(f => new
+            {
+                feedbackId = f.FeedbackId,
+                userId = f.UserId,
+                donorName = f.User != null ? f.User.UserName : "Unknown",
+                donorEmail = f.User != null ? f.User.Email : string.Empty,
+                donationId = f.DonationId,
+                charityName = f.CharityName,
+                amount = f.Amount,
+                paymentMethod = f.PaymentMethod,
+                paymentReference = f.PaymentReference,
+                rating = f.Rating,
+                experience = f.Experience,
+                suggestion = f.Suggestion,
+                createdAt = f.CreatedAt
+            })
+            .ToListAsync();
+
+        return Ok(new { success = true, items });
     }
 
     [HttpGet("charity-requests")]

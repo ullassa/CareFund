@@ -22,6 +22,7 @@ namespace CareFund.Data
         public DbSet<Otp> OTPs { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<OtpVerification> OtpVerifications { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
  
         // Relationships 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -70,6 +71,10 @@ namespace CareFund.Data
 
             modelBuilder.Entity<CharityRegistrationRequest>()
                 .Property(c => c.TargetAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Feedback>()
+                .Property(f => f.Amount)
                 .HasPrecision(18, 2);
  
             // User - OTP (1:M)

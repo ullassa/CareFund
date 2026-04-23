@@ -18,12 +18,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   commentDraft: Record<number, string> = {};
   expandedRequestId: number | null = null;
   expandedDonorId: number | null = null;
-  activePanel: 'donors' | 'charities' = 'donors';
+  activePanel: 'donors' | 'charities' | 'feedback' = 'donors';
 
   statusFilter = '';
   stats: any = { pending: 0, approved: 0, rejected: 0, totalCustomers: 0, totalCharities: 0, totalDonors: 0, totalDonation: 0 };
   requests: any[] = [];
   donors: any[] = [];
+  feedbacks: any[] = [];
 
   private readonly backListener = (): void => {
     window.history.pushState(null, '', window.location.href);
@@ -37,13 +38,16 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     window.addEventListener('popstate', this.backListener);
   }
 
-  setActivePanel(panel: 'donors' | 'charities'): void {
+  setActivePanel(panel: 'donors' | 'charities' | 'feedback'): void {
     this.activePanel = panel;
     if (panel === 'donors' && this.donors.length === 0) {
       this.fetchDonors();
     }
     if (panel === 'charities' && this.requests.length === 0) {
       this.fetchRequests();
+    }
+    if (panel === 'feedback' && this.feedbacks.length === 0) {
+      this.fetchFeedbacks();
     }
   }
 
@@ -73,8 +77,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private fetchPanelData(): void {
     if (this.activePanel === 'donors') {
       this.fetchDonors();
-    } else {
+    } else if (this.activePanel === 'charities') {
       this.fetchRequests();
+    } else {
+      this.fetchFeedbacks();
     }
   }
 
@@ -88,6 +94,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to load donor details.';
+      }
+    });
+  }
+
+  fetchFeedbacks(): void {
+    this.api.getAdminFeedbacks().subscribe({
+      next: (res: any) => {
+        this.feedbacks = res?.items ?? [];
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Failed to load feedback details.';
       }
     });
   }
