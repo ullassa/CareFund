@@ -11,21 +11,22 @@
 }
 
 .hero-shell {
-  padding: 1.5rem 1rem 1rem;
+  padding: 0 0 1rem;
 }
 
 .hero-card {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   display: grid;
   grid-template-columns: 1.4fr 1fr;
   gap: 1.5rem;
   background: linear-gradient(135deg, #e688d6 0%, #41b3a3 50%, #cc809b 100%);
   color: #fff7ee;
-  border-radius: 28px;
-  padding: 2.6rem;
-  box-shadow: 0 34px 70px rgba(12, 16, 22, 0.38);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+  padding: 2.4rem 2rem;
+  box-shadow: none;
+  border: 0;
   animation: liftIn 0.8s ease both;
 }
 
@@ -263,6 +264,40 @@
 .section-head p {
   margin: 0;
   color: #5f6676;
+}
+
+.filters-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.type-filter {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.type-filter label {
+  font-size: 0.8rem;
+  color: #4b2d4b;
+  font-weight: 600;
+}
+
+.type-filter select {
+  min-width: 180px;
+  padding: 0.8rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(97, 48, 92, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a1f2a;
+  outline: none;
+}
+
+.type-filter select:focus {
+  border-color: rgba(29, 158, 141, 0.6);
+  box-shadow: 0 0 0 4px rgba(172, 197, 218, 0.28);
 }
 
 .search-box input {
@@ -517,7 +552,15 @@
     align-items: stretch;
   }
 
-  .search-box input,
+  .filters-row {
+    justify-content: stretch;
+  }
+
+  .type-filter select,
+  .search-box input {
+    width: 100%;
+  }
+
   .stats-grid,
   .charity-grid,
   .testimonial-grid {

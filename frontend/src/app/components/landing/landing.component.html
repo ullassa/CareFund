@@ -91,13 +91,25 @@
           <h2>Available charities</h2>
           <p>Browse live charities from the platform and choose where your support goes.</p>
         </div>
-        <div class="search-box">
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="onSearchChange()"
-            placeholder="Search charity, cause, or location"
-          >
+        <div class="filters-row">
+          <div class="type-filter">
+            <label for="charityType">Type</label>
+            <select
+              id="charityType"
+              [ngModel]="selectedCharityType"
+              (ngModelChange)="onCharityTypeChange($event)"
+            >
+              <option *ngFor="let type of charityTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="search-box">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="onSearchChange()"
+              placeholder="Search charity, cause, or location"
+            >
+          </div>
         </div>
       </div>
 

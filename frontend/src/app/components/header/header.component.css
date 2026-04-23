@@ -68,6 +68,22 @@
   margin-left: 2.8rem;
 }
 
+.header .nav-menu {
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 0;
+  box-shadow: none;
+  position: static;
+  top: auto;
+  z-index: auto;
+  padding: 0;
+}
+
+.header .nav-menu a,
+.header .nav-menu .nav-link {
+  padding: 0;
+}
+
 .nav-link {
   font-size: 0.98rem;
   color: var(--cf-ash);

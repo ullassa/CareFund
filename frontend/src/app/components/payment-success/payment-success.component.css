@@ -94,8 +94,88 @@ p {
   color: #0f172a;
 }
 
+.share-section {
+  margin-top: 1.2rem;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1rem;
+  background: #f8fafc;
+}
+
+.share-section h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.share-copy {
+  margin: 0 0 0.8rem;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.share-links {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.share-btn:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.share-link-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+}
+
+.share-link-input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: #ffffff;
+  color: #334155;
+}
+
+.copy-btn {
+  border: 1px solid #94a3b8;
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: #f1f5f9;
+}
+
 @media (max-width: 640px) {
   .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .share-link-row {
     grid-template-columns: 1fr;
   }
 }

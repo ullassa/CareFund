@@ -16,6 +16,9 @@ export class PaymentSuccessComponent implements OnInit {
   amount = 0;
   paymentMethod = 'Payment';
   reference = '';
+  shareUrl = '';
+  shareText = '';
+  copied = false;
 
   constructor(private route: ActivatedRoute) {}
 
@@ -25,6 +28,42 @@ export class PaymentSuccessComponent implements OnInit {
       this.amount = params['amount'] ? Number(params['amount']) : 0;
       this.paymentMethod = params['paymentMethod'] || 'Payment';
       this.reference = params['reference'] || `CF-${Date.now()}`;
+      this.buildSharePayload();
     });
+  }
+
+  private buildSharePayload(): void {
+    const amountText = this.amount > 0 ? `₹${this.amount.toLocaleString('en-IN')}` : 'a contribution';
+    this.shareText = `I just donated ${amountText} to ${this.charityName} on CareFund. Join me in supporting real causes and creating positive impact.`;
+    this.shareUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4200';
+  }
+
+  get whatsappShareLink(): string {
+    return `https://wa.me/?text=${encodeURIComponent(`${this.shareText} ${this.shareUrl}`)}`;
+  }
+
+  get twitterShareLink(): string {
+    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(this.shareText)}&url=${encodeURIComponent(this.shareUrl)}`;
+  }
+
+  get facebookShareLink(): string {
+    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.shareUrl)}&quote=${encodeURIComponent(this.shareText)}`;
+  }
+
+  get linkedInShareLink(): string {
+    return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.shareUrl)}`;
+  }
+
+  async copyShareText(): Promise<void> {
+    const textToCopy = `${this.shareText} ${this.shareUrl}`;
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      this.copied = true;
+      setTimeout(() => {
+        this.copied = false;
+      }, 2000);
+    } catch {
+      this.copied = false;
+    }
   }
 }

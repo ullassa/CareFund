@@ -34,6 +34,23 @@
       <a routerLink="/" class="btn btn-primary">Go to Home</a>
       <a routerLink="/donate" class="btn btn-secondary">Donate Again</a>
     </div>
+
+    <section class="share-section">
+      <h2>Share this on social media</h2>
+      <p class="share-copy">{{ shareText }}</p>
+
+      <div class="share-links">
+        <a [href]="whatsappShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">WhatsApp</a>
+        <a [href]="twitterShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">X</a>
+        <a [href]="facebookShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">Facebook</a>
+        <a [href]="linkedInShareLink" target="_blank" rel="noopener noreferrer" class="share-btn">LinkedIn</a>
+      </div>
+
+      <div class="share-link-row">
+        <input type="text" [value]="shareUrl" readonly class="share-link-input" />
+        <button type="button" class="copy-btn" (click)="copyShareText()">{{ copied ? 'Copied' : 'Copy Post + Link' }}</button>
+      </div>
+    </section>
   </section>
 </main>
 

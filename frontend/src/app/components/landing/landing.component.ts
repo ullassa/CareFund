@@ -18,6 +18,8 @@ export class LandingComponent implements OnInit, OnDestroy {
   charities: any[] = [];
   filteredCharities: any[] = [];
   visibleCharities: any[] = [];
+  charityTypes: string[] = ['All'];
+  selectedCharityType = 'All';
   isLoading = false;
   searchTerm = '';
   isLoggedIn = false;
@@ -127,15 +129,23 @@ export class LandingComponent implements OnInit, OnDestroy {
         const items = response?.items ?? [];
         const approvedItems = items.filter((item: any) => item.status === 'Approved' && item.isActive !== false);
         this.charities = approvedItems;
-        this.filteredCharities = approvedItems;
+        const uniqueTypes = Array.from<string>(
+          new Set(
+            approvedItems
+              .map((item: any) => String(item?.cause || '').trim())
+              .filter((cause: string) => !!cause)
+          )
+        ).sort((a: string, b: string) => a.localeCompare(b));
+        this.charityTypes = ['All', ...uniqueTypes];
+        this.applyFilters();
         this.buildLiveSpotlights(approvedItems);
-        this.currentPage = 1;
-        this.updateVisibleCharities();
         this.updateStatistics(items);
       },
       error: () => {
         this.isLoading = false;
         this.charities = [];
+        this.charityTypes = ['All'];
+        this.selectedCharityType = 'All';
         this.filteredCharities = [];
         this.visibleCharities = [];
       }
@@ -155,19 +165,30 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   onSearchChange(): void {
-    const term = this.searchTerm.trim().toLowerCase();
-    if (!term) {
-      this.filteredCharities = this.charities;
-      this.currentPage = 1;
-      this.updateVisibleCharities();
-      return;
-    }
+    this.applyFilters();
+  }
 
-    this.filteredCharities = this.charities.filter(charity =>
-      [charity.charityName, charity.cause, charity.location, charity.description]
-        .filter(Boolean)
-        .some((value: string) => value.toLowerCase().includes(term))
-    );
+  onCharityTypeChange(type: string): void {
+    this.selectedCharityType = type;
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    const term = this.searchTerm.trim().toLowerCase();
+    const selectedType = this.selectedCharityType.trim().toLowerCase();
+
+    this.filteredCharities = this.charities.filter(charity => {
+      const charityCause = String(charity?.cause || '').trim().toLowerCase();
+      const matchesType = selectedType === 'all' || charityCause === selectedType;
+
+      const matchesSearch = !term ||
+        [charity.charityName, charity.cause, charity.location, charity.description]
+          .filter(Boolean)
+          .some((value: string) => String(value).toLowerCase().includes(term));
+
+      return matchesType && matchesSearch;
+    });
+
     this.currentPage = 1;
     this.updateVisibleCharities();
   }

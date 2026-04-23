@@ -4,8 +4,29 @@
   <!-- Hero Section -->
   <section class="blogs-hero">
     <div class="hero-content">
-      <h1>Active Charities</h1>
-      <p>Real fundraising initiatives from verified organizations</p>
+      <h1>CareFund Stories & Activities</h1>
+      <p>Success stories, awareness articles, positive updates, and testimonials from our community impact journey.</p>
+    </div>
+  </section>
+
+  <section class="featured-section">
+    <div class="container">
+      <h2>Featured Stories</h2>
+      <div class="featured-grid">
+        <article class="featured-card" *ngFor="let post of featuredPosts">
+          <div class="featured-image" *ngIf="post.imageUrl; else featuredFallback">
+            <img [src]="post.imageUrl" [alt]="post.title" />
+          </div>
+          <ng-template #featuredFallback>
+            <div class="featured-image no-image">{{ post.highlight }}</div>
+          </ng-template>
+          <div class="featured-content">
+            <span class="badge">{{ post.category }}</span>
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.description }}</p>
+          </div>
+        </article>
+      </div>
     </div>
   </section>
 
@@ -28,49 +49,26 @@
   <!-- Main Posts Grid -->
   <section class="posts-section">
     <div class="container">
-      <div *ngIf="isLoading" class="loading-state">
-        <p>Loading charities...</p>
-      </div>
-
       <div class="posts-grid">
         <article class="post-card" *ngFor="let post of filteredPosts">
-          <div class="card-image" *ngIf="post.imageUrl">
-            <img [src]="normalizeImageUrl(post.imageUrl)" [alt]="post.title" class="post-img"/>
+          <div class="card-image" *ngIf="post.imageUrl; else cardFallback">
+            <img [src]="post.imageUrl" [alt]="post.title" class="post-img"/>
           </div>
-          <div class="card-body" *ngIf="!post.imageUrl">
-            <div class="no-image">{{ post.cause }}</div>
-          </div>
+          <ng-template #cardFallback>
+            <div class="no-image">{{ post.highlight }}</div>
+          </ng-template>
 
           <div class="card-content">
-            <span class="badge">{{ post.cause }}</span>
+            <span class="badge">{{ post.category }}</span>
             <h3>{{ post.title }}</h3>
-            <p class="location">
-              <span class="location-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0Z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </span>
-              {{ post.location }}
-            </p>
-            
-            <div class="progress-info">
-              <div class="progress-bar">
-                <div class="progress-fill" [style.width.%]="post.progress"></div>
-              </div>
-              <div class="progress-text">
-                <span>₹{{ post.raised.toLocaleString('en-IN') }}</span>
-                <span>/ ₹{{ post.target.toLocaleString('en-IN') }}</span>
-              </div>
-            </div>
-
+            <p class="post-date">{{ post.date }}</p>
             <p class="description">{{ post.description }}</p>
           </div>
         </article>
       </div>
 
       <div *ngIf="filteredPosts.length === 0" class="no-posts">
-        <p>No charities found in this category.</p>
+        <p>No stories found in this category.</p>
       </div>
     </div>
   </section>
