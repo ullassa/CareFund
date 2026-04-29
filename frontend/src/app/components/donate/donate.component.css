@@ -78,6 +78,16 @@ section {
   margin-top: 1rem;
 }
 
+.charity-skeleton-grid {
+  grid-template-columns: 1fr;
+  margin-top: 1rem;
+}
+
+.charity-skeleton {
+  display: grid;
+  gap: 0.6rem;
+}
+
 .filter-row {
   display: grid;
   grid-template-columns: 1fr 220px 120px;

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using CareFund.Data;
 using CareFund.Models;
+using CareFund.Services.AuditLogs;
 using System.Linq;
  
 namespace CareFund.Controllers
@@ -11,10 +12,12 @@ namespace CareFund.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IAuditLogService _auditLogs;
  
-        public UsersController(ApplicationDbContext context)
+        public UsersController(ApplicationDbContext context, IAuditLogService auditLogs)
         {
             _context = context;
+            _auditLogs = auditLogs;
         }
  
         // GET: api/users
@@ -60,6 +63,14 @@ public async Task<IActionResult> UpdateUser(int id, User updatedUser)
 
     await _context.SaveChangesAsync();
 
+    await _auditLogs.LogAsync(
+        user.UserId,
+        user.UserRole,
+        "Update",
+        "User",
+        user.UserId,
+        $"User updated: {user.UserName}.");
+
     return Ok(user);
 }
 
@@ -73,6 +84,14 @@ public async Task<IActionResult> DeleteUser(int id)
 
     _context.Users.Remove(user);
     await _context.SaveChangesAsync();
+
+    await _auditLogs.LogAsync(
+        user.UserId,
+        user.UserRole,
+        "Delete",
+        "User",
+        user.UserId,
+        $"User deleted: {user.UserName}.");
 
     return Ok("User deleted successfully");
 }

@@ -36,6 +36,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<INotificationEmailService, NotificationEmailService>();
+builder.Services.AddScoped<CareFund.Services.AuditLogs.IAuditLogService, CareFund.Services.AuditLogs.AuditLogService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -83,7 +84,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular", policy =>
     {
         policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
-              .AllowAnyHeader()
+              .AllowAnyHeader() //allow only specific frontend Urls
               .AllowAnyMethod();
     });
 });
@@ -127,70 +128,6 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         app.Logger.LogWarning(ex, "Database migration skipped during startup. Continuing without migration.");
-    }
-
-    // Ensure TargetAmount column exists (schema fix for compatibility)
-    try
-    {
-        db.Database.ExecuteSqlRaw(@"
-IF OBJECT_ID('dbo.Charities', 'U') IS NOT NULL
-  AND COL_LENGTH('dbo.Charities', 'TargetAmount') IS NULL
-BEGIN
-    ALTER TABLE [dbo].[Charities]
-    ADD [TargetAmount] decimal(18,2) NOT NULL DEFAULT(100000);
-END");
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogWarning(ex, "TargetAmount column fix skipped. It may already exist.");
-    }
-
-    // Ensure Feedbacks table exists (compatibility when migrations are skipped)
-    try
-    {
-        db.Database.ExecuteSqlRaw(@"
-IF OBJECT_ID('dbo.Feedbacks', 'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[Feedbacks] (
-        [FeedbackId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        [UserId] INT NULL,
-        [DonationId] INT NULL,
-        [CharityName] NVARCHAR(200) NOT NULL DEFAULT(''),
-        [Amount] DECIMAL(18,2) NULL,
-        [PaymentMethod] NVARCHAR(50) NOT NULL DEFAULT(''),
-        [PaymentReference] NVARCHAR(120) NOT NULL DEFAULT(''),
-        [Rating] INT NOT NULL,
-        [Experience] NVARCHAR(2000) NOT NULL,
-        [Suggestion] NVARCHAR(2000) NOT NULL DEFAULT(''),
-        [CreatedAt] DATETIME2 NOT NULL DEFAULT(SYSUTCDATETIME())
-    );
-END");
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogWarning(ex, "Feedbacks table fix skipped. It may already exist.");
-    }
-
-    // Ensure FavoriteCharities table exists (compatibility when migrations are skipped)
-    try
-    {
-        db.Database.ExecuteSqlRaw(@"
-IF OBJECT_ID('dbo.FavoriteCharities', 'U') IS NULL
-BEGIN
-    CREATE TABLE [dbo].[FavoriteCharities] (
-        [FavoriteCharityId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        [CustomerId] INT NOT NULL,
-        [CharityRegistrationId] INT NOT NULL,
-        [CreatedAt] DATETIME2 NOT NULL DEFAULT(SYSUTCDATETIME())
-    );
-
-    CREATE UNIQUE INDEX [IX_FavoriteCharities_CustomerId_CharityRegistrationId]
-        ON [dbo].[FavoriteCharities]([CustomerId], [CharityRegistrationId]);
-END");
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogWarning(ex, "FavoriteCharities table fix skipped. It may already exist.");
     }
 
     if (!schemaReady)

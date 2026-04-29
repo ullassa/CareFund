@@ -1,21 +1,31 @@
 <app-header></app-header>
 
 <main class="dashboard-page">
-  <section class="dashboard-shell ds-theme-admin" *ngIf="!loading; else loadingView">
-    <header class="dash-header">
+  <section class="admin-shell ds-theme-admin" *ngIf="!loading; else loadingView">
+    <header class="dashboard-hero">
       <div>
         <h1>Admin Dashboard</h1>
-        <p class="subtitle">Manage donors and charities from one view</p>
+        <p>Manage donors and charities from one view</p>
       </div>
-      <div class="filter-section">
-        <label for="status-filter">Status</label>
-        <select id="status-filter" [(ngModel)]="statusFilter" (change)="fetchRequests()" class="filter-select">
-          <option value="">All</option>
-          <option value="Pending">Pending</option>
-          <option value="Approved">Approved</option>
-          <option value="Rejected">Rejected</option>
-          <option value="Hold">Hold</option>
-        </select>
+      <div class="dashboard-hero-actions">
+        <div class="audit-link-wrap">
+          <a class="audit-link" routerLink="/admin/audit-logs">Audit Logs</a>
+        </div>
+        <div class="panel-tabs">
+          <button type="button" class="panel-tab" [class.active]="activePanel === 'donors'" (click)="setActivePanel('donors')">Donors</button>
+          <button type="button" class="panel-tab" [class.active]="activePanel === 'charities'" (click)="setActivePanel('charities')">Charities</button>
+          <button type="button" class="panel-tab" [class.active]="activePanel === 'feedback'" (click)="setActivePanel('feedback')">Feedback</button>
+        </div>
+        <div class="filter-section" *ngIf="activePanel === 'charities'">
+          <label for="status-filter">Status</label>
+          <select id="status-filter" [(ngModel)]="statusFilter" (change)="fetchRequests()" class="filter-select">
+            <option value="">All</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Hold">Hold</option>
+          </select>
+        </div>
       </div>
     </header>
 
@@ -23,14 +33,10 @@
 
     <section class="kpi-section">
       <div class="kpi-grid">
-        <article class="kpi-card pending-card"><p class="kpi-label">Pending</p><h3 class="kpi-value">{{ stats.pending }}</h3></article>
-        <article class="kpi-card approved-card"><p class="kpi-label">Approved</p><h3 class="kpi-value">{{ stats.approved }}</h3></article>
-        <article class="kpi-card rejected-card"><p class="kpi-label">Rejected</p><h3 class="kpi-value">{{ stats.rejected }}</h3></article>
-        <article class="kpi-card neutral-card"><p class="kpi-label">Hold</p><h3 class="kpi-value">{{ stats.hold || 0 }}</h3></article>
-        <article class="kpi-card neutral-card"><p class="kpi-label">Users</p><h3 class="kpi-value">{{ (stats.totalCustomers || 0) + (stats.totalCharities || 0) }}</h3></article>
-        <article class="kpi-card neutral-card"><p class="kpi-label">Donors</p><h3 class="kpi-value">{{ stats.totalDonors || donors.length }}</h3></article>
-        <article class="kpi-card neutral-card"><p class="kpi-label">Donations</p><h3 class="kpi-value">₹{{ (stats.totalDonation || 0) | number:'1.0-0' }}</h3></article>
-        <article class="kpi-card neutral-card"><p class="kpi-label">Approval %</p><h3 class="kpi-value">{{ approvalPercent }}%</h3></article>
+        <article class="kpi-card" *ngFor="let card of kpiCards" [ngClass]="card.variant + '-card'">
+          <p class="kpi-label">{{ card.label }}</p>
+          <h3 class="kpi-value">{{ card.value }}</h3>
+        </article>
       </div>
     </section>
 
@@ -70,12 +76,6 @@
     </section>
 
     <div class="admin-layout">
-      <aside class="admin-sidebar">
-        <button type="button" class="sidebar-btn" [class.active]="activePanel === 'donors'" (click)="setActivePanel('donors')">Donors</button>
-        <button type="button" class="sidebar-btn" [class.active]="activePanel === 'charities'" (click)="setActivePanel('charities')">Charities</button>
-        <button type="button" class="sidebar-btn" [class.active]="activePanel === 'feedback'" (click)="setActivePanel('feedback')">Feedback</button>
-      </aside>
-
       <div class="admin-main-panels">
         <section class="requests-section" *ngIf="activePanel === 'charities'">
           <div class="table-head">
@@ -110,7 +110,7 @@
           </div>
 
           <div class="table-wrap" *ngIf="requests.length > 0; else noRequests">
-            <table class="requests-table">
+            <table class="requests-table compact">
               <thead>
                 <tr>
                   <th>Charity</th>
@@ -156,6 +156,10 @@
                         <div><label>Remaining</label><p>₹{{ (item.remainingAmount || 0) | number:'1.0-0' }}</p></div>
                         <div class="full"><label>Email</label><p>{{ item.email || 'Not provided' }}</p></div>
                         <div class="full"><label>Address</label><p>{{ item.addressLine || 'Not provided' }}</p></div>
+                        <div><label>Bank Name</label><p>{{ item.bankName || 'Not provided' }}</p></div>
+                        <div><label>Account Holder</label><p>{{ item.accountHolderName || 'Not provided' }}</p></div>
+                        <div><label>Account Number</label><p>{{ item.accountNumber || 'Not provided' }}</p></div>
+                        <div><label>IFSC Code</label><p>{{ item.ifscCode || 'Not provided' }}</p></div>
                         <div class="full"><label>Mission</label><p>{{ item.mission || 'Not provided' }}</p></div>
                         <div class="full"><label>About</label><p>{{ item.about || 'Not provided' }}</p></div>
                         <div class="full"><label>Activities</label><p>{{ item.activities || 'Not provided' }}</p></div>
@@ -198,8 +202,8 @@
             <span>{{ stats.totalDonors || donors.length }} donors</span>
           </div>
 
-          <div class="table-wrap" *ngIf="donors.length > 0; else noCustomers">
-            <table class="requests-table">
+          <div class="table-wrap table-wrap--donors" *ngIf="donors.length > 0; else noCustomers">
+            <table class="requests-table donors-table compact">
               <thead>
                 <tr>
                   <th>Name</th>
@@ -236,7 +240,7 @@
                       <div><label>Total Donated</label><p>₹{{ (donor.totalDonated || 0) | number:'1.0-0' }}</p></div>
                       <div class="full"><label>Donation History</label>
                         <div class="donation-history" *ngIf="donor.donations?.length > 0; else noDonorPayments">
-                          <table class="donation-table">
+                          <table class="donation-table compact">
                             <thead>
                               <tr>
                                 <th>Charity</th>
@@ -322,10 +326,28 @@
   </section>
 
   <ng-template #loadingView>
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading dashboard...</p>
-    </div>
+    <section class="dashboard-shell ds-theme-admin">
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-line" style="margin-top: 0.5rem; width: 70%;"></div>
+      </div>
+
+      <div class="skeleton-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6,7,8]">
+          <div class="skeleton skeleton-line" style="width: 55%;"></div>
+          <div class="skeleton skeleton-title" style="margin-top: 0.6rem;"></div>
+        </div>
+      </div>
+
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton-row" style="margin-top: 0.8rem;">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line" style="width: 85%;"></div>
+        </div>
+      </div>
+    </section>
   </ng-template>
 </main>
 

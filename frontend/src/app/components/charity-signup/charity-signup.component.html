@@ -443,6 +443,70 @@
           </div>
 
           <div class="form-group">
+            <label for="bankName">Bank Name *</label>
+            <input
+              type="text"
+              id="bankName"
+              formControlName="bankName"
+              placeholder="e.g., State Bank of India"
+              class="form-control"
+              [class.is-invalid]="submitted && bankName?.invalid"
+            >
+            <div *ngIf="submitted && bankName?.invalid" class="error-message">
+              <span *ngIf="bankName?.errors?.['required']">Bank name is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="accountHolderName">Account Holder Name *</label>
+            <input
+              type="text"
+              id="accountHolderName"
+              formControlName="accountHolderName"
+              placeholder="Name on bank account"
+              class="form-control"
+              [class.is-invalid]="submitted && accountHolderName?.invalid"
+            >
+            <div *ngIf="submitted && accountHolderName?.invalid" class="error-message">
+              <span *ngIf="accountHolderName?.errors?.['required']">Account holder name is required</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="accountNumber">Account Number *</label>
+            <input
+              type="text"
+              id="accountNumber"
+              formControlName="accountNumber"
+              placeholder="Enter account number"
+              class="form-control"
+              inputmode="numeric"
+              [class.is-invalid]="submitted && accountNumber?.invalid"
+            >
+            <div *ngIf="submitted && accountNumber?.invalid" class="error-message">
+              <span *ngIf="accountNumber?.errors?.['required']">Account number is required</span>
+              <span *ngIf="accountNumber?.errors?.['pattern']">Account number must be numeric</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ifscCode">IFSC Code *</label>
+            <input
+              type="text"
+              id="ifscCode"
+              formControlName="ifscCode"
+              placeholder="e.g., HDFC0001234"
+              class="form-control"
+              maxlength="11"
+              [class.is-invalid]="submitted && ifscCode?.invalid"
+            >
+            <div *ngIf="submitted && ifscCode?.invalid" class="error-message">
+              <span *ngIf="ifscCode?.errors?.['required']">IFSC code is required</span>
+              <span *ngIf="ifscCode?.errors?.['pattern']">Enter a valid IFSC code</span>
+            </div>
+          </div>
+
+          <div class="form-group">
             <label>Websites</label>
             <div class="dynamic-list">
               <div class="dynamic-row" *ngFor="let website of websiteLinks; let i = index; trackBy: trackByIndex">

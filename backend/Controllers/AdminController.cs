@@ -2,6 +2,7 @@ using System.Security.Claims;
 using CareFund.Data;
 using CareFund.Enums;
 using CareFund.Models;
+using CareFund.Services.AuditLogs;
 using CareFund.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ public class AdminController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly INotificationEmailService _notifications;
+    private readonly IAuditLogService _auditLogs;
 
-    public AdminController(ApplicationDbContext context, INotificationEmailService notifications)
+    public AdminController(ApplicationDbContext context, INotificationEmailService notifications, IAuditLogService auditLogs)
     {
         _context = context;
         _notifications = notifications;
+        _auditLogs = auditLogs;
     }
 
     [HttpGet("dashboard")]
@@ -80,6 +83,10 @@ public class AdminController : ControllerBase
             state = c.IndianState.ToString(),
             pincode = c.Pincode,
             socialMediaLink = c.SocialMediaLink,
+            bankName = c.BankName,
+            accountHolderName = c.AccountHolderName,
+            accountNumber = c.AccountNumber,
+            ifscCode = c.IFSCCode,
             status = c.Status.ToString(),
             submittedAt = c.SubmittedAt,
             reviewedAt = c.ReviewedAt,
@@ -261,6 +268,31 @@ public class AdminController : ControllerBase
         return Ok(new { success = true, items });
     }
 
+    [HttpGet("audit-logs")]
+    public async Task<IActionResult> GetAuditLogs()
+    {
+        var items = await (from log in _context.AuditLogs.AsNoTracking()
+                           join user in _context.Users.AsNoTracking()
+                               on log.UserId equals user.UserId into userJoin
+                           from user in userJoin.DefaultIfEmpty()
+                           orderby log.Timestamp descending
+                           select new
+                           {
+                               log.Id,
+                               time = log.Timestamp,
+                               log.UserId,
+                               userName = user != null ? user.UserName : "System",
+                               role = string.IsNullOrWhiteSpace(log.UserRole) ? "Unknown" : log.UserRole,
+                               action = log.Action,
+                               entity = log.EntityName,
+                               log.EntityId,
+                               details = log.Details
+                           })
+                           .ToListAsync();
+
+        return Ok(new { success = true, items });
+    }
+
     [HttpGet("charity-requests")]
     public async Task<IActionResult> GetCharityRequests([FromQuery] string? status = null)
     {
@@ -300,6 +332,10 @@ public class AdminController : ControllerBase
             state = c.IndianState.ToString(),
             pincode = c.Pincode,
             socialMediaLink = c.SocialMediaLink,
+            bankName = c.BankName,
+            accountHolderName = c.AccountHolderName,
+            accountNumber = c.AccountNumber,
+            ifscCode = c.IFSCCode,
             status = c.Status.ToString(),
             submittedAt = c.SubmittedAt,
             reviewedAt = c.ReviewedAt,
@@ -332,6 +368,25 @@ public class AdminController : ControllerBase
         };
         entity.AdminComment = dto.AdminComment;
         entity.ReviewedAt = DateTime.UtcNow;
+
+        var adminEmail = User.FindFirstValue(ClaimTypes.Email);
+        var adminUser = await _context.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == (adminEmail ?? string.Empty).Trim().ToLowerInvariant());
+
+        var auditAction = action == "approve"
+            ? "Approve"
+            : action == "reject"
+                ? "Reject"
+                : "Update";
+
+        await _auditLogs.LogAsync(
+            adminUser?.UserId,
+            adminUser?.UserRole ?? UserRole.Admin,
+            auditAction,
+            "Charity",
+            entity.CharityRegistrationId,
+            $"Charity request {action}d for {entity.User?.UserName ?? "CareFund"}." +
+            (string.IsNullOrWhiteSpace(dto.AdminComment) ? string.Empty : $" Comment: {dto.AdminComment}"));
 
         await _notifications.NotifyUserAsync(
             entity.User!,

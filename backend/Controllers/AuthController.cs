@@ -6,6 +6,7 @@ using CareFund.Services.Auth;
 using CareFund.Services.Jwt;
 using CareFund.Services.Notifications;
 using CareFund.Services.Otp;
+using CareFund.Services.AuditLogs;
 using CareFund.DTOs.Auth;
 using CareFund.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -20,8 +21,9 @@ public class AuthController : ControllerBase
     private readonly INotificationEmailService _notifications;
     private readonly ApplicationDbContext _context;
     private readonly IWebHostEnvironment _environment;
+    private readonly IAuditLogService _auditLogs;
 
-    public AuthController(IAuthService authService, IJwtService jwtService, IOtpService otpService, INotificationEmailService notifications, ApplicationDbContext context, IWebHostEnvironment environment)
+    public AuthController(IAuthService authService, IJwtService jwtService, IOtpService otpService, INotificationEmailService notifications, ApplicationDbContext context, IWebHostEnvironment environment, IAuditLogService auditLogs)
     {
         _authService = authService;
         _jwtService = jwtService;
@@ -29,11 +31,12 @@ public class AuthController : ControllerBase
         _notifications = notifications;
         _context = context;
         _environment = environment;
+        _auditLogs = auditLogs;
     }
 
     // LOGIN
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest loginUser)
+    public async Task<IActionResult> Login([FromBody] LoginRequest loginUser)
     {
         try
         {
@@ -47,6 +50,7 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { success = false, message = "Invalid credentials" });
 
             var token = _jwtService.GenerateToken(user);
+            await _auditLogs.LogAsync(user.UserId, user.UserRole, "Login", "User", user.UserId, $"{user.UserRole} logged in.");
             return Ok(new
             {
                 success = true,
@@ -278,6 +282,10 @@ public class AuthController : ControllerBase
                 dto.ManagerName,
                 dto.ManagerPhone,
                 websiteLinks.Count > 0 ? string.Join(", ", websiteLinks) : null,
+                dto.BankName?.Trim(),
+                dto.AccountHolderName?.Trim(),
+                dto.AccountNumber?.Trim(),
+                dto.IFSCCode?.Trim(),
                 dto.Mission,
                 dto.About,
                 dto.Activities,
@@ -291,6 +299,18 @@ public class AuthController : ControllerBase
                 user,
                 "Welcome to CareFund",
                 "Thank you for registering with CareFund. Your charity profile is pending admin approval.");
+
+            var charity = await _context.Charities
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.UserId == user.UserId);
+
+            await _auditLogs.LogAsync(
+                user.UserId,
+                user.UserRole,
+                "Create",
+                "Charity",
+                charity?.CharityRegistrationId,
+                $"Charity registration submitted for {charityName}.");
 
             return Ok(new { success = true, message = "Charity registered successfully", userId = user.UserId });
         }
@@ -362,6 +382,14 @@ public class AuthController : ControllerBase
                 user,
                 "Welcome to CareFund",
                 "Thank you for registering with CareFund. Your customer account is now active.");
+
+            await _auditLogs.LogAsync(
+                user.UserId,
+                user.UserRole,
+                "Create",
+                "User",
+                user.UserId,
+                $"Customer account created for {user.UserName}.");
 
             return Ok(new { success = true, message = "Customer registered successfully", userId = user.UserId });
         }

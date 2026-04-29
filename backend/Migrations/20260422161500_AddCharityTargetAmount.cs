@@ -1,28 +1,33 @@
+using CareFund.Data;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace CareFund.Migrations
 {
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20260422161500_AddCharityTargetAmount")]
     public partial class AddCharityTargetAmount : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<decimal>(
-                name: "TargetAmount",
-                table: "Charities",
-                type: "decimal(18,2)",
-                precision: 18,
-                scale: 2,
-                nullable: false,
-                defaultValue: 100000m);
+            migrationBuilder.Sql(@"IF OBJECT_ID('dbo.Charities', 'U') IS NOT NULL
+  AND COL_LENGTH('dbo.Charities', 'TargetAmount') IS NULL
+BEGIN
+    ALTER TABLE [dbo].[Charities]
+    ADD [TargetAmount] decimal(18,2) NOT NULL DEFAULT(100000);
+END");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "TargetAmount",
-                table: "Charities");
+            migrationBuilder.Sql(@"IF OBJECT_ID('dbo.Charities', 'U') IS NOT NULL
+  AND COL_LENGTH('dbo.Charities', 'TargetAmount') IS NOT NULL
+BEGIN
+    ALTER TABLE [dbo].[Charities]
+    DROP COLUMN [TargetAmount];
+END");
         }
     }
 }

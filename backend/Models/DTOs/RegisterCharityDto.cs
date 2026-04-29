@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 public class RegisterCharityDto
 {
     public string Name { get; set; } = string.Empty;
@@ -22,4 +24,22 @@ public class RegisterCharityDto
     public string? About { get; set; }
     public string? Activities { get; set; }
     public decimal? NeededAmount { get; set; }
+
+    [Required(ErrorMessage = "Bank name is required")]
+    [StringLength(150)]
+    public string? BankName { get; set; }
+
+    [Required(ErrorMessage = "Account holder name is required")]
+    [StringLength(150)]
+    public string? AccountHolderName { get; set; }
+
+    [Required(ErrorMessage = "Account number is required")]
+    [RegularExpression(@"^\d+$", ErrorMessage = "Account number must be numeric")]
+    [StringLength(30)]
+    public string? AccountNumber { get; set; }
+
+    [Required(ErrorMessage = "IFSC code is required")]
+    [RegularExpression(@"^(?i)[A-Z]{4}0[A-Z0-9]{6}$", ErrorMessage = "Enter valid IFSC code")]
+    [StringLength(11, MinimumLength = 11)]
+    public string? IFSCCode { get; set; }
 }

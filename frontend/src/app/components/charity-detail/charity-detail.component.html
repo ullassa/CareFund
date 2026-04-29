@@ -1,83 +1,96 @@
 <app-header></app-header>
 
 <main class="donate-page">
-  <div class="donate-container">
-    <section class="charity-detail-head glass-card">
+  <div class="donate-container flat-layout charity-details-shell">
+    <div class="charity-detail-head flat-head">
       <button type="button" class="btn btn-secondary" routerLink="/">Back to Charities</button>
       <button type="button" class="btn" (click)="scrollToDonationSection()">Donate Now</button>
-    </section>
+    </div>
 
-    <section class="charity-hero glass-card" *ngIf="selectedCharity as charity">
-      <div class="hero-copy">
-        <span class="eyebrow">Charity details</span>
-        <div class="hero-icon">{{ getCharityIcon(charity.cause) }}</div>
-        <h2>{{ charity.name }}</h2>
-        <p>{{ charity.description || 'This charity is ready to receive your support.' }}</p>
-
-        <div class="meta-grid">
-          <div>
-            <span class="meta-label">Cause</span>
-            <strong>{{ charity.cause || 'Community support' }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">Location</span>
-            <strong>{{ charity.location || 'Not set' }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">Email</span>
-            <strong>{{ charity.email || 'Not set' }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">Phone</span>
-            <strong>{{ charity.phoneNumber || 'Not set' }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">Registration ID</span>
-            <strong>{{ charity.registrationId || 'Not set' }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">Manager</span>
-            <strong>{{ charity.managerName || charity.name || 'Not set' }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">Address</span>
-            <strong>{{ charity.addressLine || 'Not set' }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">State / Pincode</span>
-            <strong>{{ (charity.state || 'NA') + ' / ' + (charity.pincode || 'NA') }}</strong>
-          </div>
-          <div>
-            <span class="meta-label">Social Link</span>
-            <strong>{{ charity.socialMediaLink || 'Not set' }}</strong>
-          </div>
-        </div>
-
-        <div class="buttons">
-          <button type="button" class="btn btn-secondary" (click)="shareSelectedCharity()">Share Charity</button>
-          <button type="button" class="btn btn-secondary" (click)="copyCharityLink()">Copy Link</button>
-        </div>
+    <section class="charity-hero flat-hero" *ngIf="selectedCharity as charity">
+      <div class="charity-top-section">
+        <h1>{{ charity.name }}</h1>
+        <p class="top-cause">{{ charity.cause || 'Community support' }}</p>
+        <p class="top-registration">Registration ID: {{ charity.registrationId || 'Not available' }}</p>
       </div>
 
-      <div class="hero-image-panel" *ngIf="charity.imageUrls.length">
-        <img
-          class="hero-main-photo"
-          [src]="charity.imageUrls[0]"
-          [alt]="charity.name + ' image'"
-        >
-        <div class="hero-thumbs">
-          <img
-            *ngFor="let image of charity.imageUrls | slice:0:5; let i = index"
-            class="hero-thumb"
-            [src]="image"
-            [alt]="charity.name + ' image ' + (i + 1)"
-          >
+      <div class="charity-main-grid">
+        <div class="charity-main-left">
+          <article class="content-card">
+            <h3>About</h3>
+            <p>{{ charity.about || 'About information is not available yet.' }}</p>
+          </article>
+          <article class="content-card">
+            <h3>Mission</h3>
+            <p>{{ charity.mission || 'Mission details are not available yet.' }}</p>
+          </article>
+          <article class="content-card content-card-full">
+            <h3>Activities</h3>
+            <p>{{ charity.activities || 'Activities are not available yet.' }}</p>
+          </article>
         </div>
+
+        <aside class="charity-main-right content-card" *ngIf="displayGalleryImages.length > 0; else noGalleryImagesMain">
+          <h3>Image Gallery</h3>
+          <div class="gallery-layout">
+            <div class="gallery-main">
+              <img [src]="displayGalleryImages[0]" [alt]="charity.name + ' image 1'">
+            </div>
+            <div class="gallery-small-grid" *ngIf="displayGalleryImages.length > 1">
+              <div class="gallery-small-item" *ngFor="let image of displayGalleryImages.slice(1); let i = index">
+                <img [src]="image" [alt]="charity.name + ' image ' + (i + 2)">
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <section class="details-bottom-grid content-card">
+        <div>
+          <span class="meta-label">Location</span>
+          <p>{{ charity.location || 'Not set' }}</p>
+        </div>
+        <div>
+          <span class="meta-label">Email</span>
+          <p>{{ charity.email || 'Not set' }}</p>
+        </div>
+        <div>
+          <span class="meta-label">Phone</span>
+          <p>{{ charity.phoneNumber || 'Not set' }}</p>
+        </div>
+        <div>
+          <span class="meta-label">Manager Name</span>
+          <p>{{ charity.managerName || charity.name || 'Not set' }}</p>
+        </div>
+        <div>
+          <span class="meta-label">Address</span>
+          <p>{{ charity.addressLine || 'Not set' }}</p>
+        </div>
+        <div>
+          <span class="meta-label">Social Media Link</span>
+          <p class="social-link">{{ charity.socialMediaLink || 'Not set' }}</p>
+        </div>
+      </section>
+
+      <div class="buttons flat-buttons">
+        <button type="button" class="btn btn-secondary" (click)="shareSelectedCharity()">Share Charity</button>
+        <button type="button" class="btn btn-secondary" (click)="copyCharityLink()">Copy Link</button>
       </div>
     </section>
 
-    <section class="charity-list-section glass-card" *ngIf="charityLoading">
-      <div class="alert alert-info">Loading charity details...</div>
+    <ng-template #noGalleryImagesMain>
+      <aside class="charity-main-right content-card">
+        <h3>Image Gallery</h3>
+        <p class="empty-copy">No images available right now.</p>
+      </aside>
+    </ng-template>
+
+    <section class="charity-list-section glass-card" *ngIf="charityLoading" aria-live="polite" aria-busy="true">
+      <div class="skeleton-row">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-line" style="width: 70%;"></div>
+        <div class="skeleton skeleton-line"></div>
+      </div>
     </section>
 
     <section class="charity-list-section glass-card" *ngIf="!charityLoading && charityError">
@@ -85,21 +98,6 @@
       <div class="buttons">
         <button type="button" class="btn btn-secondary" routerLink="/">Back to Charities</button>
       </div>
-    </section>
-
-    <section class="gallery-section glass-card" *ngIf="selectedCharity as charity">
-      <ng-container *ngIf="charity.imageUrls.length">
-      <div class="section-head">
-        <h2>Charity images</h2>
-        <p>These charity photos appear when a donor views the charity.</p>
-      </div>
-
-      <div class="gallery-scroll image-grid">
-        <article class="gallery-card glass-panel image-card" *ngFor="let image of charity.imageUrls; let i = index">
-          <img [src]="image" [alt]="charity.name + ' gallery ' + (i + 1)">
-        </article>
-      </div>
-      </ng-container>
     </section>
 
     <section id="donation-section" class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn && canDonate && !showPaymentSection">

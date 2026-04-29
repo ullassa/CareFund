@@ -22,6 +22,10 @@ export class HeaderComponent {
     return !this.auth.snapshot.isLoggedIn;
   }
 
+  get showProfile(): boolean {
+    return this.auth.normalizedRole !== 'admin';
+  }
+
   logout(): void {
     this.auth.clearSession();
     this.router.navigate(['/login'], { replaceUrl: true }).then(navigated => {

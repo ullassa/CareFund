@@ -105,6 +105,10 @@ export class CharitySignupComponent implements OnInit {
       mission: ['', [Validators.required]],
       goal: ['', [Validators.required]],
       description: [''],
+      bankName: ['', [Validators.required]],
+      accountHolderName: ['', [Validators.required]],
+      accountNumber: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+      ifscCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/)]],
       website: ['', Validators.pattern(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/)],
       termsAccepted: [false, [Validators.requiredTrue]]
     });
@@ -220,6 +224,10 @@ export class CharitySignupComponent implements OnInit {
       this.signupForm.get('neededAmount')?.valid &&
       this.signupForm.get('mission')?.valid &&
       this.signupForm.get('goal')?.valid &&
+      this.signupForm.get('bankName')?.valid &&
+      this.signupForm.get('accountHolderName')?.valid &&
+      this.signupForm.get('accountNumber')?.valid &&
+      this.signupForm.get('ifscCode')?.valid &&
       this.signupForm.get('termsAccepted')?.value === true
     );
   }
@@ -493,7 +501,11 @@ export class CharitySignupComponent implements OnInit {
         `Charity type: ${this.signupForm.get('charityType')?.value ?? ''}`,
         `Needed amount: ₹${this.signupForm.get('neededAmount')?.value ?? 0}`,
         `Mission: ${this.signupForm.get('mission')?.value ?? ''}`,
-        `Goal: ${this.signupForm.get('goal')?.value ?? ''}`
+        `Goal: ${this.signupForm.get('goal')?.value ?? ''}`,
+        `Bank: ${this.signupForm.get('bankName')?.value ?? ''}`,
+        `Account holder: ${this.signupForm.get('accountHolderName')?.value ?? ''}`,
+        `Account number: ${this.signupForm.get('accountNumber')?.value ?? ''}`,
+        `IFSC: ${String(this.signupForm.get('ifscCode')?.value ?? '').toUpperCase()}`
       ].join('\n');
 
       const previewConfirmed = window.confirm(`Please review your charity registration details:\n\n${summary}\n\nIf anything is wrong, cancel and edit the form.`);
@@ -547,6 +559,10 @@ export class CharitySignupComponent implements OnInit {
             mission: this.signupForm.get('mission')?.value ?? '',
             about: this.signupForm.get('description')?.value ?? '',
             activities: this.signupForm.get('goal')?.value ?? '',
+            bankName: this.signupForm.get('bankName')?.value ?? '',
+            accountHolderName: this.signupForm.get('accountHolderName')?.value ?? '',
+            accountNumber: this.signupForm.get('accountNumber')?.value ?? '',
+            ifscCode: String(this.signupForm.get('ifscCode')?.value ?? '').toUpperCase(),
             imageUrls
           };
 
@@ -606,6 +622,10 @@ export class CharitySignupComponent implements OnInit {
   get mission() { return this.signupForm.get('mission'); }
   get goal() { return this.signupForm.get('goal'); }
   get description() { return this.signupForm.get('description'); }
+  get bankName() { return this.signupForm.get('bankName'); }
+  get accountHolderName() { return this.signupForm.get('accountHolderName'); }
+  get accountNumber() { return this.signupForm.get('accountNumber'); }
+  get ifscCode() { return this.signupForm.get('ifscCode'); }
   get termsAccepted() { return this.signupForm.get('termsAccepted'); }
   get charityImageCount(): number {
     return this.selectedCharityImages.length;
@@ -627,7 +647,11 @@ export class CharitySignupComponent implements OnInit {
       `Needed amount: ₹${this.signupForm.get('neededAmount')?.value ?? 0}`,
       `Mission: ${this.signupForm.get('mission')?.value ?? ''}`,
       `Goal: ${this.signupForm.get('goal')?.value ?? ''}`,
-      `Registration number: ${this.signupForm.get('charityRegistrationNumber')?.value ?? ''}`
+      `Registration number: ${this.signupForm.get('charityRegistrationNumber')?.value ?? ''}`,
+      `Bank: ${this.signupForm.get('bankName')?.value ?? ''}`,
+      `Account holder: ${this.signupForm.get('accountHolderName')?.value ?? ''}`,
+      `Account number: ${this.signupForm.get('accountNumber')?.value ?? ''}`,
+      `IFSC: ${String(this.signupForm.get('ifscCode')?.value ?? '').toUpperCase()}`
     ].join(' • ');
   }
 }

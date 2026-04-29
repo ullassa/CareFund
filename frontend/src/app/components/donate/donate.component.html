@@ -19,7 +19,12 @@
         <button type="button" class="btn" (click)="applyFilters()">Filter</button>
       </div>
 
-      <div *ngIf="charityLoading" class="alert alert-info">Loading charities...</div>
+      <div *ngIf="charityLoading" class="skeleton-grid charity-skeleton-grid" aria-live="polite" aria-busy="true">
+        <div class="skeleton-card charity-skeleton" *ngFor="let _ of [1,2,3,4]">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-line" style="margin-top: 0.6rem; width: 75%;"></div>
+        </div>
+      </div>
       <div *ngIf="!charityLoading && charityError" class="alert alert-danger">{{ charityError }}</div>
 
       <div class="charity-list" *ngIf="!charityLoading && charities.length > 0">
@@ -91,7 +96,7 @@
         </div>
       </div>
 
-      <div class="hero-image-panel" *ngIf="charity.imageUrls.length">
+      <div class="hero-image-panel" *ngIf="charity.imageUrls.length; else noHeroImages">
         <img
           class="hero-main-photo"
           [src]="charity.imageUrls[0]"
@@ -106,11 +111,17 @@
           >
         </div>
       </div>
+        <ng-template #noHeroImages>
+          <div class="empty-state">
+            <h3 class="empty-title">No images yet</h3>
+            <p class="empty-copy">This charity has not uploaded photos.</p>
+          </div>
+        </ng-template>
       </ng-container>
     </section>
 
     <section class="gallery-section glass-card" *ngIf="selectedCharity as charity">
-      <ng-container *ngIf="charity.imageUrls.length">
+        <ng-container *ngIf="charity.imageUrls.length; else noGalleryImages">
       <div class="section-head">
         <h2>Charity images</h2>
         <p>These charity photos appear when a donor views the charity.</p>
@@ -122,6 +133,12 @@
         </article>
       </div>
       </ng-container>
+      <ng-template #noGalleryImages>
+        <div class="empty-state">
+          <h3 class="empty-title">No gallery images</h3>
+          <p class="empty-copy">When images are added, they will appear here.</p>
+        </div>
+      </ng-template>
     </section>
 
     <section class="amount-section glass-card" *ngIf="selectedCharity && isLoggedIn && canDonate && !showPaymentSection">

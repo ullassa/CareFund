@@ -48,7 +48,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ff6b4a, #f4b247);
+  background: linear-gradient(135deg, #e688d6 0%, #41b3a3 50%, #cc809b 100%);
   color: #1a1210;
   letter-spacing: 0.08em;
   overflow: hidden;
@@ -99,6 +99,9 @@
   align-items: center;
   gap: 0.5rem;
   position: relative;
+  padding: 0.5rem 0.25rem;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 
 .nav-link:hover {
@@ -106,14 +109,20 @@
   transform: translateY(-1px);
 }
 
+.nav-link:focus {
+  outline: 2px solid #e688d6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .nav-link::after {
   content: '';
   position: absolute;
   left: 0;
-  bottom: -0.5rem;
+  bottom: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #ff6b4a, #f4b247);
+  background: linear-gradient(90deg, #e688d6, #41b3a3);
   transition: width 0.2s ease;
 }
 
@@ -138,6 +147,13 @@
   transition: all 0.2s ease;
   border: none;
   display: inline-block;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.btn:focus {
+  outline: 2px solid #e688d6;
+  outline-offset: 2px;
 }
 
 .btn-outline {
@@ -148,7 +164,6 @@
 
 .btn-outline:hover {
   background-color: rgba(18, 21, 28, 0.08);
-  color: var(--cf-ink);
 }
 
 .start-charity-btn {

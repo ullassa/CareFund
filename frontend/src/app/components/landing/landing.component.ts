@@ -27,9 +27,6 @@ export class LandingComponent implements OnInit, OnDestroy {
   isLoading = false;
   searchTerm = '';
   isLoggedIn = false;
-  currentRole = '';
-  favoriteCharityIds = new Set<number>();
-  favoriteLoadingIds = new Set<number>();
   currentPage = 1;
   pageSize = 6;
   expandedCharities = new Set<string>();
@@ -95,20 +92,13 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedIn = !!sessionStorage.getItem('token');
-    this.currentRole = (sessionStorage.getItem('role') || '').trim().toLowerCase();
-
     if (this.isLoggedIn) {
       this.heroTitle = 'Welcome back to CareFund';
       this.heroSubtitle = 'Browse live charities and donate with confidence.';
     }
     this.selectHeroSlide(0);
     this.loadCharities();
-    this.loadFavorites();
     this.startHeroRotation();
-  }
-
-  get isCustomer(): boolean {
-    return this.isLoggedIn && this.currentRole === 'customer';
   }
 
   ngOnDestroy(): void {
@@ -176,22 +166,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadFavorites(): void {
-    if (!this.isCustomer) {
-      this.favoriteCharityIds.clear();
-      return;
-    }
-
-    this.api.getFavoriteCharities().subscribe({
-      next: (res: any) => {
-        const items: number[] = Array.isArray(res?.items) ? res.items : [];
-        this.favoriteCharityIds = new Set(items.filter(id => Number.isFinite(Number(id))).map(id => Number(id)));
-      },
-      error: () => {
-        this.favoriteCharityIds.clear();
-      }
-    });
-  }
 
   updateStatistics(items: any[]): void {
     const approved = items.filter(item => item.status === 'Approved').length;
@@ -294,41 +268,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     return 'Low';
   }
 
-  isFavorite(charity: any): boolean {
-    const charityId = Number(charity?.charityId ?? 0);
-    return charityId > 0 && this.favoriteCharityIds.has(charityId);
-  }
-
-  toggleFavorite(charity: any): void {
-    if (!this.isCustomer) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    const charityId = Number(charity?.charityId ?? 0);
-    if (charityId <= 0 || this.favoriteLoadingIds.has(charityId)) {
-      return;
-    }
-
-    this.favoriteLoadingIds.add(charityId);
-    const request$ = this.isFavorite(charity)
-      ? this.api.removeFavoriteCharity(charityId)
-      : this.api.addFavoriteCharity(charityId);
-
-    request$.subscribe({
-      next: () => {
-        if (this.favoriteCharityIds.has(charityId)) {
-          this.favoriteCharityIds.delete(charityId);
-        } else {
-          this.favoriteCharityIds.add(charityId);
-        }
-        this.favoriteLoadingIds.delete(charityId);
-      },
-      error: () => {
-        this.favoriteLoadingIds.delete(charityId);
-      }
-    });
-  }
 
   shareCharity(charity: any): void {
     const title = charity?.charityName || 'CareFund Charity';

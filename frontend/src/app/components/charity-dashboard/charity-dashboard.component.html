@@ -170,10 +170,28 @@
   </section>
 
   <ng-template #loadingView>
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading your dashboard...</p>
-    </div>
+    <section class="dashboard-shell charity-v2 ds-theme-charity">
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-line" style="margin-top: 0.5rem; width: 70%;"></div>
+      </div>
+
+      <div class="skeleton-grid" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+        <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6]">
+          <div class="skeleton skeleton-line" style="width: 60%;"></div>
+          <div class="skeleton skeleton-title" style="margin-top: 0.6rem;"></div>
+        </div>
+      </div>
+
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton-row" style="margin-top: 0.8rem;">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line" style="width: 85%;"></div>
+        </div>
+      </div>
+    </section>
   </ng-template>
 </main>
 

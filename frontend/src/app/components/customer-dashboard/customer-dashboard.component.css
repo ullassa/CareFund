@@ -3,20 +3,31 @@
   gap: 1rem;
 }
 
+.dashboard-page {
+  background: linear-gradient(180deg, rgba(230, 136, 214, 0.08) 0%, rgba(65, 179, 163, 0.08) 55%, rgba(204, 128, 155, 0.08) 100%);
+  min-height: 100vh;
+  padding: 1.5rem 1rem 2rem;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
 .hero-panel {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #312e81 0%, #4338ca 45%, #7c3aed 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #e688d6 0%, #41b3a3 50%, #cc809b 100%);
+  color: #fff7ee;
   border-radius: 16px;
-  padding: 1.1rem 1.2rem;
+  padding: 2rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
 .hero-panel h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.5vw, 1.8rem);
+  line-height: 1.1;
 }
 
 .hero-panel p {

@@ -3,6 +3,7 @@ using System.Text;
 using CareFund.Data;
 using CareFund.Enums;
 using CareFund.Models;
+using CareFund.Services.AuditLogs;
 using CareFund.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +19,13 @@ public class DonationsController : ControllerBase
     private const decimal CharitySufficientAmountThreshold = 100000m;
     private readonly ApplicationDbContext _context;
     private readonly INotificationEmailService _notifications;
+    private readonly IAuditLogService _auditLogs;
 
-    public DonationsController(ApplicationDbContext context, INotificationEmailService notifications)
+    public DonationsController(ApplicationDbContext context, INotificationEmailService notifications, IAuditLogService auditLogs)
     {
         _context = context;
         _notifications = notifications;
+        _auditLogs = auditLogs;
     }
 
     [HttpPost]
@@ -86,6 +89,14 @@ public class DonationsController : ControllerBase
 
         _context.Donations.Add(donation);
         await _context.SaveChangesAsync();
+
+        await _auditLogs.LogAsync(
+            user.UserId,
+            user.UserRole,
+            "Donation",
+            "Donation",
+            donation.DonationId,
+            $"Customer donated ₹{request.Amount:n2} to Charity ID {charity.CharityRegistrationId}.");
 
         var donorMessage = $"You donated ₹{request.Amount:n2} to {charity.User?.UserName ?? "a charity"} on CareFund. Transaction reference: {payment.TransactionReference}.";
         await _notifications.NotifyUserAsync(user, "Donation received", donorMessage, donation.DonationId);

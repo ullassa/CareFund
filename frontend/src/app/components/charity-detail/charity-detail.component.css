@@ -1,35 +1,212 @@
-.charity-detail-head {
+
+:host {
+  --cd-ink: var(--cf-ink);
+  --cd-ink-soft: var(--cf-ash);
+  --cd-border: rgba(15, 23, 42, 0.12);
+}
+
+.donate-page {
+  background: #f7fafc;
+  padding: 0 0 2rem;
+}
+
+.donate-container.flat-layout.charity-details-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+}
+
+.flat-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  background: linear-gradient(135deg, #e688d6 0%, #41b3a3 50%, #cc809b 100%);
-  border-radius: 22px;
-  border: 1px solid rgba(97, 48, 92, 0.18);
-  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.12);
+  margin-bottom: 20px;
 }
 
-.charity-detail-head .btn {
-  min-width: 180px;
+.flat-hero {
+  background: #fff;
+  border: 1px solid var(--cd-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
-.charity-detail-head .btn-secondary {
-  background: rgba(255, 255, 255, 0.9);
-  color: #1a1f2a;
-  border: 1px solid rgba(97, 48, 92, 0.18);
+.charity-top-section {
+  margin-bottom: 20px;
 }
 
-.charity-detail-head .btn-secondary:hover {
-  background: #fff4e2;
+.charity-top-section h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1.2;
+  color: var(--cd-ink);
 }
 
-@media (max-width: 768px) {
-  .charity-detail-head {
+.top-cause {
+  margin: 0.4rem 0 0;
+  color: #334155;
+  font-weight: 600;
+}
+
+.top-registration {
+  margin: 0.35rem 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.charity-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+  gap: 20px;
+}
+
+.charity-main-left {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.content-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  padding: 16px;
+}
+
+.content-card h3 {
+  margin: 0 0 0.5rem;
+  color: #0f172a;
+}
+
+.content-card p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.content-card-full {
+  grid-column: 1 / -1;
+}
+
+.charity-main-right {
+  align-self: start;
+}
+
+.gallery-layout {
+  display: grid;
+  gap: 12px;
+}
+
+.gallery-main,
+.gallery-small-item {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.gallery-main {
+  aspect-ratio: 4 / 3;
+}
+
+.gallery-main img,
+.gallery-small-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.gallery-main:hover img,
+.gallery-small-item:hover img {
+  transform: scale(1.03);
+}
+
+.gallery-small-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.gallery-small-item {
+  aspect-ratio: 1 / 1;
+}
+
+.details-bottom-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.details-bottom-grid .meta-label {
+  display: block;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+}
+
+.details-bottom-grid p {
+  margin: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.social-link {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.flat-buttons {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.flat-layout section,
+.flat-layout .payment-section {
+  margin-top: 20px;
+}
+
+@media (max-width: 900px) {
+  .charity-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charity-main-left {
+    grid-template-columns: 1fr;
+  }
+
+  .details-bottom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .donate-container.flat-layout.charity-details-shell {
+    padding: 16px;
+  }
+
+  .flat-head {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .charity-detail-head .btn {
+  .flat-head .btn {
     width: 100%;
+  }
+
+  .details-bottom-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,85 +1,71 @@
 <app-header></app-header>
 
 <main class="profile-page">
+  <section class="profile-hero" *ngIf="!loading" aria-label="Profile header">
+    <div class="profile-hero-content">
+      <h1>Your Profile</h1>
+      <p *ngIf="isCharityManager">View and manage your organization details.</p>
+      <p *ngIf="!isCharityManager">Manage your account settings and personal information.</p>
+    </div>
+    <span class="role-badge" role="status" [attr.aria-label]="'Your role is ' + (role || 'User')">{{ role || 'User' }}</span>
+  </section>
+
   <section class="profile-card" *ngIf="!loading; else loadingView">
-    <div class="title-row">
-      <div>
-        <h1>Profile</h1>
-        <p *ngIf="isCharityManager">View your profile details here.</p>
-        <p *ngIf="!isCharityManager">Edit your details here. Changes are saved instantly and shared across tabs.</p>
-      </div>
-      <span class="role-badge">{{ role || 'User' }}</span>
-    </div>
+    <p class="message success" *ngIf="message" role="status" aria-live="polite">{{ message }}</p>
+    <p class="message error" *ngIf="error" role="alert" aria-live="assertive">{{ error }}</p>
 
-    <p class="message success" *ngIf="message">{{ message }}</p>
-    <p class="message error" *ngIf="error">{{ error }}</p>
-
-    <div class="profile-grid">
+    <form class="profile-grid" [formGroup]="profileForm" *ngIf="profileForm">
       <label>
-        Name
-        <input [(ngModel)]="profile.name" type="text" [disabled]="!canEditField('name')" />
+        <span>Name</span>
+        <input 
+          type="text" 
+          formControlName="name" 
+          [disabled]="!canEditField('name')"
+          aria-label="Full name"
+          [attr.aria-invalid]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
+        />
       </label>
 
       <label>
-        Email
-        <input [(ngModel)]="profile.email" type="email" [disabled]="!canEditField('email')" />
+        <span>Address</span>
+        <input 
+          type="text" 
+          placeholder="Address" 
+          formControlName="addressLine" 
+          [disabled]="!canEditField('addressLine')"
+          aria-label="Address"
+          [attr.aria-invalid]="profileForm.get('addressLine')?.invalid && profileForm.get('addressLine')?.touched"
+        />
       </label>
-
-      <label>
-        Phone
-        <input [(ngModel)]="profile.phoneNumber" type="text" [disabled]="!canEditField('phone')" />
-      </label>
-
-      <label>
-        City / Address
-        <input [(ngModel)]="profile.city" type="text" placeholder="City" [disabled]="!canEditField('city')" />
-      </label>
-    </div>
+    </form>
 
     <section *ngIf="role === 'CharityManager'" class="charity-box">
       <h2>Charity Details</h2>
       <p class="note">Charity profile details are read-only.</p>
 
-      <div class="profile-grid">
-        <label>
-          Address Line
-          <input [(ngModel)]="charityProfile.addressLine" type="text" [disabled]="true" />
-        </label>
-
-        <label>
-          Cause Type
-          <input [(ngModel)]="charityProfile.causeType" type="text" [disabled]="true" />
-        </label>
-
-        <label class="full">
-          Mission
-          <textarea [(ngModel)]="charityProfile.mission" rows="3" [disabled]="true"></textarea>
-        </label>
-
-        <label class="full">
-          About
-          <textarea [(ngModel)]="charityProfile.about" rows="3" [disabled]="true"></textarea>
-        </label>
-
-        <label class="full">
-          Activities
-          <textarea [(ngModel)]="charityProfile.activities" rows="3" [disabled]="true"></textarea>
-        </label>
-
-        <label class="full">
-          Social Media Link
-          <input [(ngModel)]="charityProfile.socialMediaLink" type="url" [disabled]="true" />
-        </label>
+      <div class="read-only-grid">
+        <div class="read-only-item"><span>Registration ID</span><p>{{ charityProfile.registrationId || 'Not available' }}</p></div>
+        <div class="read-only-item"><span>Cause Type</span><p>{{ charityProfile.causeType || 'Not available' }}</p></div>
+        <div class="read-only-item"><span>Manager Name</span><p>{{ charityProfile.managerName || 'Not available' }}</p></div>
+        <div class="read-only-item"><span>Manager Phone</span><p>{{ charityProfile.managerPhone || 'Not available' }}</p></div>
+        <div class="read-only-item"><span>Address</span><p>{{ charityProfile.addressLine || 'Not available' }}</p></div>
+        <div class="read-only-item"><span>City</span><p>{{ charityProfile.city || 'Not available' }}</p></div>
+        <div class="read-only-item"><span>State</span><p>{{ charityProfile.state || 'Not available' }}</p></div>
+        <div class="read-only-item"><span>Pincode</span><p>{{ charityProfile.pincode || 'Not available' }}</p></div>
+        <div class="read-only-item full"><span>Mission</span><p>{{ charityProfile.mission || 'Not available' }}</p></div>
+        <div class="read-only-item full"><span>About</span><p>{{ charityProfile.about || 'Not available' }}</p></div>
+        <div class="read-only-item full"><span>Activities</span><p>{{ charityProfile.activities || 'Not available' }}</p></div>
+        <div class="read-only-item full"><span>Social Media Link</span><p class="break-link">{{ charityProfile.socialMediaLink || 'Not available' }}</p></div>
       </div>
     </section>
 
-    <div class="actions">
-      <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="canEditProfile && !isEditing">Edit</button>
-      <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="canEditProfile && isEditing">Cancel</button>
-      <button type="button" class="btn primary" (click)="save()" [disabled]="saving" *ngIf="canEditProfile && isEditing">
+    <div class="actions" role="group" aria-label="Profile actions">
+      <button type="button" class="btn secondary" (click)="enableEdit()" *ngIf="canEditProfile && !isEditing" [attr.aria-label]="'Edit profile'">Edit</button>
+      <button type="button" class="btn secondary" (click)="cancelEdit()" *ngIf="canEditProfile && isEditing" [attr.aria-label]="'Cancel editing'">Cancel</button>
+      <button type="button" class="btn primary" (click)="save()" [disabled]="saving" *ngIf="canEditProfile && isEditing" [attr.aria-busy]="saving">
         {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>
-      <a routerLink="/" class="btn secondary">Back Home</a>
+      <a routerLink="/" class="btn secondary" [attr.aria-label]="'Go back to home'">Back Home</a>
     </div>
 
     <section class="faq-box">
@@ -100,9 +86,22 @@
   </section>
 
   <ng-template #loadingView>
-    <section class="profile-card loading">
-      <div class="spinner"></div>
-      <p>Loading profile...</p>
+    <section class="profile-card">
+      <div class="skeleton-row">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-line" style="width: 70%;"></div>
+      </div>
+      <div class="skeleton-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 1.2rem;">
+        <div class="skeleton" style="height: 44px;"></div>
+        <div class="skeleton" style="height: 44px;"></div>
+        <div class="skeleton" style="height: 44px;"></div>
+        <div class="skeleton" style="height: 44px;"></div>
+      </div>
+      <div class="skeleton-row" style="margin-top: 1.4rem;">
+        <div class="skeleton skeleton-line"></div>
+        <div class="skeleton skeleton-line" style="width: 85%;"></div>
+        <div class="skeleton skeleton-line" style="width: 60%;"></div>
+      </div>
     </section>
   </ng-template>
 </main>

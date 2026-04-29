@@ -115,6 +115,12 @@ export class CharityDetailComponent implements OnInit, OnDestroy {
     return !this.isLoggedIn || this.currentRole === 'customer';
   }
 
+  get displayGalleryImages(): string[] {
+    const images = this.selectedCharity?.imageUrls ?? [];
+    const unique = Array.from(new Set(images.filter(url => !!url)));
+    return unique.slice(0, 5);
+  }
+
   private loadCharity(charityId: number): void {
     this.charityLoading = true;
     this.charityError = '';

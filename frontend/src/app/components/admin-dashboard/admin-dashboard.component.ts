@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { FooterComponent } from '../footer/footer.component';
 import { ApiService } from '../../services/api.service';
@@ -8,7 +9,7 @@ import { ApiService } from '../../services/api.service';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, HeaderComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterModule, HeaderComponent, FooterComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
@@ -123,6 +124,51 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.causeTrend = [];
       }
     });
+  }
+
+  get kpiCards(): Array<{ label: string; value: string | number; variant: 'pending' | 'approved' | 'rejected' | 'neutral' }> {
+    if (this.activePanel === 'charities') {
+      return [
+        { label: 'Pending', value: this.stats.pending || 0, variant: 'pending' },
+        { label: 'Approved', value: this.stats.approved || 0, variant: 'approved' },
+        { label: 'Rejected', value: this.stats.rejected || 0, variant: 'rejected' },
+        { label: 'Hold', value: this.stats.hold || 0, variant: 'neutral' }
+      ];
+    }
+
+    if (this.activePanel === 'feedback') {
+      const total = this.feedbacks.length;
+      const average = total > 0
+        ? this.feedbacks.reduce((sum, item) => sum + Number(item?.rating || 0), 0) / total
+        : 0;
+      const positive = total > 0
+        ? Math.round((this.feedbacks.filter(item => Number(item?.rating || 0) >= 4).length / total) * 100)
+        : 0;
+
+      return [
+        { label: 'Feedback', value: total, variant: 'neutral' },
+        { label: 'Avg Rating', value: average ? `${average.toFixed(1)}/5` : '0/5', variant: 'approved' },
+        { label: 'Positive', value: `${positive}%`, variant: 'approved' },
+        { label: 'Users', value: (this.stats.totalCustomers || 0) + (this.stats.totalCharities || 0), variant: 'neutral' }
+      ];
+    }
+
+    const donorCount = this.stats.totalDonors || this.donors.length;
+    const totalDonation = this.stats.totalDonation || this.donors.reduce((sum, item) => sum + Number(item?.totalDonated || 0), 0);
+    const donationCount = this.donors.reduce((sum, item) => sum + Number(item?.donationsCount || 0), 0);
+    const averageDonation = donorCount > 0 ? totalDonation / donorCount : 0;
+
+    return [
+      { label: 'Donors', value: donorCount, variant: 'neutral' },
+      { label: 'Donations', value: `₹${this.formatNumber(totalDonation)}`, variant: 'approved' },
+      { label: 'Donation Count', value: donationCount, variant: 'neutral' },
+      { label: 'Avg Donation', value: `₹${this.formatNumber(averageDonation)}`, variant: 'neutral' }
+    ];
+  }
+
+  private formatNumber(value: number): string {
+    if (!Number.isFinite(value)) return '0';
+    return Math.round(value).toLocaleString('en-IN');
   }
 
   fetchRequests(): void {

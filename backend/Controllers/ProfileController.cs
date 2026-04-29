@@ -2,6 +2,7 @@ using System.Security.Claims;
 using CareFund.Data;
 using CareFund.Enums;
 using CareFund.Models;
+using CareFund.Services.AuditLogs;
 using CareFund.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,11 +17,13 @@ public class ProfileController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly INotificationEmailService _notifications;
+    private readonly IAuditLogService _auditLogs;
 
-    public ProfileController(ApplicationDbContext context, INotificationEmailService notifications)
+    public ProfileController(ApplicationDbContext context, INotificationEmailService notifications, IAuditLogService auditLogs)
     {
         _context = context;
         _notifications = notifications;
+        _auditLogs = auditLogs;
     }
 
     [HttpGet("me")]
@@ -52,6 +55,7 @@ public class ProfileController : ControllerBase
                 user.UserName,
                 user.Email,
                 user.PhoneNumber,
+                user.AddressLine,
                 role = user.UserRole.ToString(),
                 user.Customer?.City,
                 user.Customer?.DateOfBirth
@@ -129,7 +133,7 @@ public class ProfileController : ControllerBase
                 {
                     UserId = user.UserId,
                     DateOfBirth = DateTime.UtcNow,
-                    City = string.IsNullOrWhiteSpace(request.City) ? "Unknown" : request.City.Trim(),
+                    City = string.IsNullOrWhiteSpace(request.AddressLine) ? "Unknown" : request.AddressLine.Trim(),
                     Gender = "Other",
                     CreatedAt = DateTime.UtcNow,
                     IsAnonymousDefault = false
@@ -139,7 +143,7 @@ public class ProfileController : ControllerBase
             }
             else
             {
-                user.Customer.City = string.IsNullOrWhiteSpace(request.City) ? user.Customer.City : request.City.Trim();
+                user.Customer.City = string.IsNullOrWhiteSpace(request.AddressLine) ? user.Customer.City : request.AddressLine.Trim();
             }
         }
 
@@ -151,6 +155,14 @@ public class ProfileController : ControllerBase
             user.UserRole == UserRole.Admin
                 ? "Your admin profile has been updated successfully on CareFund."
                 : "Your customer profile has been updated successfully on CareFund.");
+
+        await _auditLogs.LogAsync(
+            user.UserId,
+            user.UserRole,
+            "Update",
+            "User",
+            user.UserId,
+            $"Profile updated for {user.UserName}.");
 
         return Ok(new
         {
@@ -172,8 +184,7 @@ public class ProfileController : ControllerBase
 public class UpdateCustomerProfileRequest
 {
     public string Name { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PhoneNumber { get; set; } = string.Empty;
+    public string? AddressLine { get; set; }
     public string? City { get; set; }
 }
 

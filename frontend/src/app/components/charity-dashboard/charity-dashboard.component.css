@@ -3,77 +3,36 @@
   gap: 1rem;
 }
 
-.status-gate {
-  display: grid;
-  place-items: center;
-  min-height: 58vh;
-}
-
-.status-card {
-  width: min(760px, 100%);
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 1.4rem 1.6rem;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-}
-
-.status-card h1 {
-  margin: 0 0 0.65rem;
-  color: #0f172a;
-}
-
-.status-card p {
-  margin: 0;
-  color: #475569;
-  line-height: 1.55;
-}
-
-.status-card.rejected {
-  border-color: #fecaca;
-  background: #fff7f7;
-}
-
-.status-card.rejected h1 {
-  color: #991b1b;
-}
-
-.status-card.hold {
-  border-color: #c7d2fe;
-  background: #eef2ff;
-}
-
-.status-card.hold h1 {
-  color: #3730a3;
-}
-
-.admin-comment {
-  margin-bottom: 0.75rem !important;
-  padding: 0.7rem 0.8rem;
-  border-radius: 10px;
-  background: #fee2e2;
-  color: #7f1d1d !important;
+.dashboard-page {
+  background: linear-gradient(180deg, rgba(230, 136, 214, 0.08) 0%, rgba(65, 179, 163, 0.08) 55%, rgba(204, 128, 155, 0.08) 100%);
+  min-height: 100vh;
+  padding: 1.5rem 1rem 2rem;
+  max-width: 1240px;
+  margin: 0 auto;
 }
 
 .hero-board {
   border-radius: 16px;
-  background: linear-gradient(135deg, #4fc2c2 0%, #52c783 46%, #d176da 100%);
-  color: #fff;
-  padding: 1.2rem 1.25rem;
+  background: linear-gradient(135deg, #e688d6 0%, #41b3a3 50%, #cc809b 100%);
+  color: #fff7ee;
+  padding: 2rem;
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 2rem;
   align-items: center;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
 .hero-board h1 {
   margin: 0;
-  font-size: 1.7rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.5vw, 1.8rem);
+  line-height: 1.1;
 }
 
 .hero-board p {
   margin: 0.35rem 0 0;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 .status-info {

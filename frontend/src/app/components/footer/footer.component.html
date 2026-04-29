@@ -123,18 +123,36 @@
   </div>
 </section>
 
-<button type="button" class="help-chat-toggle" (click)="toggleHelpChat()">
+<button type="button" class="help-chat-toggle" (click)="toggleHelpChat()" aria-label="Toggle help chat">
   {{ helpChatOpen ? 'Close Help' : 'Help Chat' }}
 </button>
 
 <section class="help-chat-panel" *ngIf="helpChatOpen">
   <header class="help-chat-head">
-    <h4>CareFund Help</h4>
+    <div>
+      <h4>CareFund Help</h4>
+      <span class="help-chat-subtitle">Ask anything about donations, receipts, or accounts.</span>
+    </div>
+    <div class="help-chat-actions">
+      <button type="button" class="help-chat-action" (click)="resetHelpChat()">Clear</button>
+      <button type="button" class="help-chat-action" (click)="toggleHelpChat()" aria-label="Close help chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
+      </button>
+    </div>
   </header>
 
-  <div class="help-chat-body">
+  <div class="help-chat-body" #helpChatBody>
     <div class="help-msg" *ngFor="let msg of helpMessages" [class.user]="msg.role === 'user'" [class.bot]="msg.role === 'bot'">
-      {{ msg.text }}
+      <div class="help-text">{{ msg.text }}</div>
+      <div class="help-meta">{{ msg.time }}</div>
+    </div>
+    <div class="help-typing" *ngIf="helpIsTyping" aria-live="polite">
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
     </div>
   </div>
 
@@ -142,7 +160,7 @@
     <button
       type="button"
       class="help-quick-chip"
-      *ngFor="let suggestion of quickHelpSuggestions"
+      *ngFor="let suggestion of helpSuggested"
       (click)="sendQuickHelpMessage(suggestion)"
     >
       {{ suggestion }}
@@ -150,7 +168,7 @@
   </div>
 
   <form class="help-chat-form" (ngSubmit)="sendHelpMessage()">
-    <input type="text" [(ngModel)]="helpInput" name="helpInput" placeholder="Ask your question..." />
+    <input type="text" [(ngModel)]="helpInput" name="helpInput" placeholder="Ask your question..." autocomplete="off" />
     <button type="submit" class="btn btn-primary">Send</button>
   </form>
 </section>

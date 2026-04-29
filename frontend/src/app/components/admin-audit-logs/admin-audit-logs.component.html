@@ -1,0 +1,127 @@
+<app-header></app-header>
+
+<main class="audit-page">
+  <section class="audit-shell">
+    <header class="audit-hero">
+      <div>
+        <h1>Audit Logs</h1>
+        <p>Track activity across customers, charities, and admins.</p>
+      </div>
+      <button type="button" class="btn btn-secondary" (click)="loadLogs()">Refresh</button>
+    </header>
+
+    <p class="error-banner" *ngIf="error">{{ error }}</p>
+
+    <section class="filters-panel">
+      <div class="filter-group">
+        <label for="roleFilter">Role</label>
+        <select id="roleFilter" [(ngModel)]="roleFilter">
+          <option *ngFor="let role of roleOptions" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="actionFilter">Action</label>
+        <select id="actionFilter" [(ngModel)]="actionFilter">
+          <option *ngFor="let action of actionOptions" [value]="action">{{ action }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="fromDate">From</label>
+        <input id="fromDate" type="date" [(ngModel)]="fromDate" />
+      </div>
+      <div class="filter-group">
+        <label for="toDate">To</label>
+        <input id="toDate" type="date" [(ngModel)]="toDate" />
+      </div>
+      <div class="filter-actions">
+        <button type="button" class="btn btn-secondary" (click)="clearFilters()">Clear</button>
+      </div>
+    </section>
+
+    <section class="audit-table-panel" *ngIf="!loading; else loadingView">
+      <div class="table-head">
+        <h2>Activity Log</h2>
+        <span>{{ filteredLogs.length }} entries</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="audit-table compact">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Action</th>
+              <th>Entity</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of pagedLogs">
+              <tr>
+                <td>{{ item.time | date:'medium' }}</td>
+                <td>{{ item.userName || 'System' }}</td>
+                <td>{{ item.role || 'Unknown' }}</td>
+                <td>{{ item.action }}</td>
+                <td>{{ item.entity }}{{ item.entityId ? ' #' + item.entityId : '' }}</td>
+                <td class="details-cell">
+                  <div class="details-preview">
+                    <span class="details-text">{{ item.details }}</span>
+                    <button type="button" class="details-toggle" (click)="toggleLogDetails(item.id)">
+                      {{ isLogOpen(item.id) ? 'Hide' : 'View' }} details
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="audit-details-row" *ngIf="isLogOpen(item.id)">
+                <td colspan="6">
+                  <div class="log-details">
+                    <div>
+                      <label>Time</label>
+                      <p>{{ item.time | date:'medium' }}</p>
+                    </div>
+                    <div>
+                      <label>User</label>
+                      <p>{{ item.userName || 'System' }}</p>
+                    </div>
+                    <div>
+                      <label>Role</label>
+                      <p>{{ item.role || 'Unknown' }}</p>
+                    </div>
+                    <div>
+                      <label>Action</label>
+                      <p>{{ item.action }}</p>
+                    </div>
+                    <div>
+                      <label>Entity</label>
+                      <p>{{ item.entity }}{{ item.entityId ? ' #' + item.entityId : '' }}</p>
+                    </div>
+                    <div class="full">
+                      <label>Details</label>
+                      <p>{{ item.details }}</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-row" *ngIf="filteredLogs.length > pageSize">
+        <button class="btn btn-outline" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+        <span class="page-indicator">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button class="btn btn-primary" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    </section>
+
+    <ng-template #loadingView>
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading audit logs...</p>
+      </div>
+    </ng-template>
+  </section>
+</main>
+
+<app-footer></app-footer>

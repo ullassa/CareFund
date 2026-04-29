@@ -191,6 +191,10 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/admin/feedbacks`);
   }
 
+  getAdminAuditLogs() {
+    return this.http.get(`${this.baseUrl}/admin/audit-logs`);
+  }
+
   getFavoriteCharities() {
     return this.http.get(`${this.baseUrl}/favorites/mine`);
   }
@@ -225,7 +229,7 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/profile/me`);
   }
 
-  updateCustomerProfile(payload: { name: string; email: string; phoneNumber: string; city?: string }) {
+  updateCustomerProfile(payload: { name: string; addressLine?: string; city?: string }) {
     return this.http.put(`${this.baseUrl}/profile/customer`, payload);
   }
 

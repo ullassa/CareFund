@@ -1,7 +1,7 @@
 <app-header></app-header>
 
 <main class="dashboard-page">
-  <section class="dashboard-shell customer-v2 ds-theme-customer">
+  <section class="dashboard-shell customer-v2 ds-theme-customer" *ngIf="!loading; else loadingView">
     <header class="hero-panel">
       <div>
         <h1>Donor Dashboard</h1>
@@ -103,6 +103,40 @@
       </section>
     </div>
   </section>
+
+  <ng-template #loadingView>
+    <section class="dashboard-shell customer-v2 ds-theme-customer">
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-line" style="margin-top: 0.5rem; width: 70%;"></div>
+      </div>
+
+      <div class="skeleton-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <div class="skeleton-card" *ngFor="let _ of [1,2,3]">
+          <div class="skeleton skeleton-line" style="width: 60%;"></div>
+          <div class="skeleton skeleton-title" style="margin-top: 0.6rem;"></div>
+        </div>
+      </div>
+
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton-row" style="margin-top: 0.8rem;">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line" style="width: 85%;"></div>
+        </div>
+      </div>
+
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton-row" style="margin-top: 0.8rem;">
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line"></div>
+        </div>
+      </div>
+    </section>
+  </ng-template>
 </main>
 
 <app-footer></app-footer>

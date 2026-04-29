@@ -10,6 +10,7 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { CustomerDashboardComponent } from './components/customer-dashboard/customer-dashboard.component';
 import { CharityDashboardComponent } from './components/charity-dashboard/charity-dashboard.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { AdminAuditLogsComponent } from './components/admin-audit-logs/admin-audit-logs.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { AboutUsComponent } from './components/about-us/about-us.component';
 import { PrivacyPolicyComponent } from './components/privacy-policy/privacy-policy.component';
@@ -28,6 +29,7 @@ export const routes: Routes = [
   { path: 'dashboard/customer', component: CustomerDashboardComponent, canActivate: [roleGuard(['Customer'])] },
   { path: 'dashboard/charity', component: CharityDashboardComponent, canActivate: [roleGuard(['CharityManager'])] },
   { path: 'dashboard/admin', component: AdminDashboardComponent, canActivate: [roleGuard(['Admin'])] },
+  { path: 'admin/audit-logs', component: AdminAuditLogsComponent, canActivate: [roleGuard(['Admin'])] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'about', component: AboutUsComponent },
   { path: 'privacy', component: PrivacyPolicyComponent },
