@@ -65,40 +65,43 @@
                 <td>{{ item.action }}</td>
                 <td>{{ item.entity }}{{ item.entityId ? ' #' + item.entityId : '' }}</td>
                 <td class="details-cell">
-                  <div class="details-preview">
-                    <span class="details-text">{{ item.details }}</span>
-                    <button type="button" class="details-toggle" (click)="toggleLogDetails(item.id)">
-                      {{ isLogOpen(item.id) ? 'Hide' : 'View' }} details
-                    </button>
-                  </div>
+                  <button type="button" class="details-toggle" (click)="toggleLogDetails(item.id)">
+                    {{ isLogOpen(item.id) ? 'Hide' : 'View' }} details
+                  </button>
                 </td>
               </tr>
               <tr class="audit-details-row" *ngIf="isLogOpen(item.id)">
                 <td colspan="6">
-                  <div class="log-details">
-                    <div>
-                      <label>Time</label>
-                      <p>{{ item.time | date:'medium' }}</p>
+                  <div class="log-details-card">
+                    <div class="log-details-header">
+                      <div>
+                        <p class="detail-kicker">Audit entry</p>
+                        <h3>{{ item.action }} • {{ item.entity }}</h3>
+                      </div>
+                      <span class="detail-badge">{{ item.role || 'Unknown' }}</span>
                     </div>
-                    <div>
-                      <label>User</label>
-                      <p>{{ item.userName || 'System' }}</p>
-                    </div>
-                    <div>
-                      <label>Role</label>
-                      <p>{{ item.role || 'Unknown' }}</p>
-                    </div>
-                    <div>
-                      <label>Action</label>
-                      <p>{{ item.action }}</p>
-                    </div>
-                    <div>
-                      <label>Entity</label>
-                      <p>{{ item.entity }}{{ item.entityId ? ' #' + item.entityId : '' }}</p>
-                    </div>
-                    <div class="full">
-                      <label>Details</label>
-                      <p>{{ item.details }}</p>
+
+                    <div class="log-details">
+                      <div>
+                        <label>Time</label>
+                        <p>{{ item.time | date:'medium' }}</p>
+                      </div>
+                      <div>
+                        <label>User</label>
+                        <p>{{ item.userName || 'System' }}</p>
+                      </div>
+                      <div>
+                        <label>Action</label>
+                        <p>{{ item.action }}</p>
+                      </div>
+                      <div>
+                        <label>Entity</label>
+                        <p>{{ item.entity }}{{ item.entityId ? ' #' + item.entityId : '' }}</p>
+                      </div>
+                      <div class="full">
+                        <label>Details</label>
+                        <p class="details-text">{{ item.details }}</p>
+                      </div>
                     </div>
                   </div>
                 </td>
